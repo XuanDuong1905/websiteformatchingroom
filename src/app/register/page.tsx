@@ -9,7 +9,7 @@ export default function RegisterPage() {
             Ghép Trọ - Ghép Bạn
           </p>
           <h1 className="mt-3 text-4xl font-bold text-gray-900">
-            Tạo tài khoản sinh viên
+            Tạo tài khoản
           </h1>
           <p className="mt-4 text-gray-600">
             Đăng ký tài khoản để tạo hồ sơ ở ghép, tìm bạn cùng phòng phù hợp và

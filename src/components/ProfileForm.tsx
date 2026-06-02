@@ -1,18 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  createOrUpdateProfile,
+  createProfile,
+  getProfile,
   type ProfilePayload,
+  updateProfile,
 } from "@/lib/api/profileApi";
 
 const profileSchema = z
   .object({
-    userId: z.coerce.number().int().positive("User ID phải là số dương"),
-    budgetMin: z.coerce.number().positive("Ngân sách tối thiểu phải lớn hơn 0"),
+    userId: z.coerce.number().int().positive("Mã người dùng phải là số dương"),
+    budgetMin: z.coerce
+      .number()
+      .positive("Ngân sách tối thiểu phải lớn hơn 0"),
     budgetMax: z.coerce.number().positive("Ngân sách tối đa phải lớn hơn 0"),
     preferredDistrict: z.string().min(1, "Vui lòng nhập khu vực mong muốn"),
     preferredGender: z.enum(["male", "female", "any"]),
@@ -28,7 +33,8 @@ const profileSchema = z
     guestFrequency: z.enum(["rare", "sometimes", "often"]),
   })
   .refine((data) => data.budgetMax >= data.budgetMin, {
-    message: "Ngân sách tối đa phải lớn hơn hoặc bằng ngân sách tối thiểu",
+    message:
+      "Ngân sách tối đa phải lớn hơn hoặc bằng ngân sách tối thiểu",
     path: ["budgetMax"],
   });
 
@@ -59,18 +65,101 @@ function FieldError({ message }: { message?: string }) {
   return <p className="mt-1 text-sm text-red-600">{message}</p>;
 }
 
+function getStoredUserId() {
+  if (typeof window === "undefined") return null;
+
+  const storedUser = localStorage.getItem("user");
+  if (storedUser) {
+    try {
+      const user = JSON.parse(storedUser) as Record<string, unknown>;
+      const userId = user.id || user.userId;
+      return typeof userId === "number" || typeof userId === "string"
+        ? Number(userId) || null
+        : null;
+    } catch {
+      return null;
+    }
+  }
+
+  const storedUserId = localStorage.getItem("userId");
+  return storedUserId ? Number(storedUserId) || null : null;
+}
+
+function getProfileData(result: unknown): Partial<ProfilePayload> | null {
+  if (!result || typeof result !== "object") return null;
+
+  const record = result as Record<string, unknown>;
+  const data = record.data || record.profile || record;
+  return data && typeof data === "object"
+    ? (data as Partial<ProfilePayload>)
+    : null;
+}
+
+function normalizeProfile(
+  profile: Partial<ProfilePayload>,
+  userId: number,
+): ProfileFormValues {
+  return {
+    ...defaultValues,
+    ...profile,
+    userId,
+  };
+}
+
 export default function ProfileForm() {
   const [successMessage, setSuccessMessage] = useState("");
   const [submitError, setSubmitError] = useState("");
+  const [loadMessage, setLoadMessage] = useState("");
+  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
+  const [hasExistingProfile, setHasExistingProfile] = useState(false);
 
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors, isSubmitting },
   } = useForm<ProfileFormInput, unknown, ProfileFormValues>({
     resolver: zodResolver(profileSchema),
     defaultValues,
   });
+
+  useEffect(() => {
+    async function loadProfile() {
+      const storedUserId = getStoredUserId();
+
+      if (!storedUserId) {
+        setLoadMessage(
+          "Chưa có mã người dùng trong trình duyệt. Bạn có thể nhập thủ công để tạo hồ sơ.",
+        );
+        setIsLoadingProfile(false);
+        return;
+      }
+
+      reset({ ...defaultValues, userId: storedUserId });
+
+      try {
+        const result = await getProfile(storedUserId);
+        const profile = getProfileData(result);
+
+        if (profile) {
+          reset(normalizeProfile(profile, storedUserId));
+          setHasExistingProfile(true);
+          setLoadMessage("Đã tải hồ sơ hiện có.");
+        }
+      } catch (err) {
+        setHasExistingProfile(false);
+        setLoadMessage(
+          err instanceof Error && err.message.includes("404")
+            ? "Chưa có hồ sơ. Bạn có thể tạo hồ sơ mới."
+            : "Chưa tải được hồ sơ hiện có. Bạn vẫn có thể nhập và lưu lại.",
+        );
+      } finally {
+        setIsLoadingProfile(false);
+      }
+    }
+
+    loadProfile();
+  }, [reset]);
 
   async function onSubmit(values: ProfileFormValues) {
     try {
@@ -78,16 +167,21 @@ export default function ProfileForm() {
       setSubmitError("");
 
       const payload: ProfilePayload = values;
-      await createOrUpdateProfile(payload);
+
+      if (hasExistingProfile) {
+        await updateProfile(values.userId, payload);
+      } else {
+        await createProfile(payload);
+        setHasExistingProfile(true);
+      }
 
       localStorage.setItem("userId", String(values.userId));
-
       setSuccessMessage(
-        "Lưu hồ sơ thành công. Bạn có thể sang trang kết quả matching.",
+        "Tạo hồ sơ thành công. Bạn có thể xem kết quả matching khi API sẵn sàng.",
       );
     } catch (err) {
       setSubmitError(
-        err instanceof Error ? err.message : "Không thể lưu hồ sơ.",
+        err instanceof Error ? err.message : "Không thể tạo hồ sơ.",
       );
     }
   }
@@ -95,8 +189,12 @@ export default function ProfileForm() {
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm"
+      className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm"
     >
+      <div className="mb-6 rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-700">
+        {isLoadingProfile ? "Đang kiểm tra hồ sơ hiện có..." : loadMessage}
+      </div>
+
       <div className="grid gap-5 md:grid-cols-2">
         <div>
           <label className="text-sm font-medium text-gray-700">
@@ -105,7 +203,7 @@ export default function ProfileForm() {
           <input
             type="number"
             {...register("userId")}
-            className="mt-2 w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
+            className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
           />
           <FieldError message={errors.userId?.message} />
         </div>
@@ -118,7 +216,7 @@ export default function ProfileForm() {
             type="text"
             placeholder="Ví dụ: Thu Duc"
             {...register("preferredDistrict")}
-            className="mt-2 w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
+            className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
           />
           <FieldError message={errors.preferredDistrict?.message} />
         </div>
@@ -130,7 +228,7 @@ export default function ProfileForm() {
           <input
             type="number"
             {...register("budgetMin")}
-            className="mt-2 w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
+            className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
           />
           <FieldError message={errors.budgetMin?.message} />
         </div>
@@ -142,7 +240,7 @@ export default function ProfileForm() {
           <input
             type="number"
             {...register("budgetMax")}
-            className="mt-2 w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
+            className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
           />
           <FieldError message={errors.budgetMax?.message} />
         </div>
@@ -153,7 +251,7 @@ export default function ProfileForm() {
           </label>
           <select
             {...register("preferredGender")}
-            className="mt-2 w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
+            className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
           >
             <option value="any">Bất kỳ</option>
             <option value="male">Nam</option>
@@ -167,7 +265,7 @@ export default function ProfileForm() {
           <input
             type="time"
             {...register("sleepTime")}
-            className="mt-2 w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
+            className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
           />
           <FieldError message={errors.sleepTime?.message} />
         </div>
@@ -179,7 +277,7 @@ export default function ProfileForm() {
           <input
             type="time"
             {...register("wakeTime")}
-            className="mt-2 w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
+            className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
           />
           <FieldError message={errors.wakeTime?.message} />
         </div>
@@ -190,7 +288,7 @@ export default function ProfileForm() {
           </label>
           <select
             {...register("cleaningFrequency")}
-            className="mt-2 w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
+            className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
           >
             <option value="daily">Hằng ngày</option>
             <option value="weekly">Hằng tuần</option>
@@ -205,7 +303,7 @@ export default function ProfileForm() {
           </label>
           <select
             {...register("privacyLevel")}
-            className="mt-2 w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
+            className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
           >
             <option value="low">Thấp</option>
             <option value="medium">Trung bình</option>
@@ -220,7 +318,7 @@ export default function ProfileForm() {
           </label>
           <select
             {...register("noiseLevel")}
-            className="mt-2 w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
+            className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
           >
             <option value="low">Thấp</option>
             <option value="medium">Trung bình</option>
@@ -235,7 +333,7 @@ export default function ProfileForm() {
           </label>
           <select
             {...register("guestFrequency")}
-            className="mt-2 w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
+            className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
           >
             <option value="rare">Hiếm khi</option>
             <option value="sometimes">Thỉnh thoảng</option>
@@ -246,35 +344,35 @@ export default function ProfileForm() {
       </div>
 
       <div className="mt-6 grid gap-4 md:grid-cols-2">
-        <label className="flex items-center gap-3 rounded-xl border border-gray-200 p-4 text-sm text-gray-700">
+        <label className="flex items-center gap-3 rounded-lg border border-gray-200 p-4 text-sm text-gray-700">
           <input type="checkbox" {...register("hasPet")} />
           Có nuôi thú cưng
         </label>
 
-        <label className="flex items-center gap-3 rounded-xl border border-gray-200 p-4 text-sm text-gray-700">
+        <label className="flex items-center gap-3 rounded-lg border border-gray-200 p-4 text-sm text-gray-700">
           <input type="checkbox" {...register("acceptPet")} />
           Chấp nhận bạn cùng phòng nuôi thú cưng
         </label>
 
-        <label className="flex items-center gap-3 rounded-xl border border-gray-200 p-4 text-sm text-gray-700">
+        <label className="flex items-center gap-3 rounded-lg border border-gray-200 p-4 text-sm text-gray-700">
           <input type="checkbox" {...register("isSmoker")} />
           Có hút thuốc
         </label>
 
-        <label className="flex items-center gap-3 rounded-xl border border-gray-200 p-4 text-sm text-gray-700">
+        <label className="flex items-center gap-3 rounded-lg border border-gray-200 p-4 text-sm text-gray-700">
           <input type="checkbox" {...register("acceptSmoking")} />
           Chấp nhận bạn cùng phòng hút thuốc
         </label>
       </div>
 
       {successMessage && (
-        <div className="mt-6 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+        <div className="mt-6 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
           {successMessage}
         </div>
       )}
 
       {submitError && (
-        <div className="mt-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="mt-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {submitError}
         </div>
       )}
@@ -282,18 +380,18 @@ export default function ProfileForm() {
       <div className="mt-6 flex flex-col gap-3 sm:flex-row">
         <button
           type="submit"
-          disabled={isSubmitting}
-          className="rounded-xl bg-blue-600 px-5 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
+          disabled={isSubmitting || isLoadingProfile}
+          className="rounded-lg bg-blue-600 px-5 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
         >
-          {isSubmitting ? "Đang lưu..." : "Lưu hồ sơ"}
+          {isSubmitting ? "Đang tạo hồ sơ..." : "Tạo hồ sơ"}
         </button>
 
-        <a
+        <Link
           href="/matches"
-          className="rounded-xl border border-gray-300 px-5 py-3 text-center font-semibold text-gray-700 transition hover:bg-gray-50"
+          className="rounded-lg border border-gray-300 px-5 py-3 text-center font-semibold text-gray-700 transition hover:bg-gray-50"
         >
           Xem kết quả matching
-        </a>
+        </Link>
       </div>
     </form>
   );

@@ -1,11 +1,11 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { registerUser } from "@/lib/api/authApi";
 
 const registerSchema = z
@@ -24,6 +24,28 @@ const registerSchema = z
   });
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
+
+function storeAuthResult(result: unknown) {
+  if (!result || typeof result !== "object") return;
+
+  const data = result as Record<string, unknown>;
+  const token = data.token;
+  const user = data.user;
+
+  if (typeof token === "string") {
+    localStorage.setItem("token", token);
+  }
+
+  if (user && typeof user === "object") {
+    const userRecord = user as Record<string, unknown>;
+    localStorage.setItem("user", JSON.stringify(userRecord));
+
+    const userId = userRecord.id || userRecord.userId;
+    if (typeof userId === "number" || typeof userId === "string") {
+      localStorage.setItem("userId", String(userId));
+    }
+  }
+}
 
 export default function RegisterForm() {
   const router = useRouter();
@@ -50,6 +72,7 @@ export default function RegisterForm() {
     try {
       setSubmitError("");
 
+      // TODO: Confirm with Member 1 whether phone/gender/school are accepted.
       const result = await registerUser({
         fullName: values.fullName,
         email: values.email,
@@ -59,25 +82,11 @@ export default function RegisterForm() {
         phone: values.phone,
       });
 
-      if (result?.token) {
-        localStorage.setItem("token", result.token);
-      }
-
-      if (result?.user) {
-        localStorage.setItem("user", JSON.stringify(result.user));
-
-        if (result.user.id || result.user.userId) {
-          localStorage.setItem(
-            "userId",
-            String(result.user.id || result.user.userId),
-          );
-        }
-      }
-
+      storeAuthResult(result);
       router.push("/profile");
     } catch (err) {
       setSubmitError(
-        err instanceof Error ? err.message : "Không thể đăng ký tài khoản.",
+        err instanceof Error ? err.message : "Không thể tạo tài khoản.",
       );
     }
   }
@@ -85,16 +94,18 @@ export default function RegisterForm() {
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm"
+      className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm"
     >
       <div className="grid gap-5 md:grid-cols-2">
         <div className="md:col-span-2">
-          <label className="text-sm font-medium text-gray-700">Họ và tên</label>
+          <label className="text-sm font-medium text-gray-700">
+            Họ và tên
+          </label>
           <input
             type="text"
             placeholder="Nguyễn Văn A"
             {...register("fullName")}
-            className="mt-2 w-full rounded-xl border border-gray-300 px-4 py-3 outline-none transition focus:border-blue-500"
+            className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-blue-500"
           />
           {errors.fullName?.message && (
             <p className="mt-1 text-sm text-red-600">
@@ -109,7 +120,7 @@ export default function RegisterForm() {
             type="email"
             placeholder="student@example.com"
             {...register("email")}
-            className="mt-2 w-full rounded-xl border border-gray-300 px-4 py-3 outline-none transition focus:border-blue-500"
+            className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-blue-500"
           />
           {errors.email?.message && (
             <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
@@ -122,7 +133,7 @@ export default function RegisterForm() {
             type="password"
             placeholder="Ít nhất 6 ký tự"
             {...register("password")}
-            className="mt-2 w-full rounded-xl border border-gray-300 px-4 py-3 outline-none transition focus:border-blue-500"
+            className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-blue-500"
           />
           {errors.password?.message && (
             <p className="mt-1 text-sm text-red-600">
@@ -139,7 +150,7 @@ export default function RegisterForm() {
             type="password"
             placeholder="Nhập lại mật khẩu"
             {...register("confirmPassword")}
-            className="mt-2 w-full rounded-xl border border-gray-300 px-4 py-3 outline-none transition focus:border-blue-500"
+            className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-blue-500"
           />
           {errors.confirmPassword?.message && (
             <p className="mt-1 text-sm text-red-600">
@@ -149,10 +160,12 @@ export default function RegisterForm() {
         </div>
 
         <div>
-          <label className="text-sm font-medium text-gray-700">Giới tính</label>
+          <label className="text-sm font-medium text-gray-700">
+            Giới tính
+          </label>
           <select
             {...register("gender")}
-            className="mt-2 w-full rounded-xl border border-gray-300 px-4 py-3 outline-none transition focus:border-blue-500"
+            className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-blue-500"
           >
             <option value="male">Nam</option>
             <option value="female">Nữ</option>
@@ -171,7 +184,7 @@ export default function RegisterForm() {
             type="text"
             placeholder="Ví dụ: HCMUS, UIT, UTE..."
             {...register("school")}
-            className="mt-2 w-full rounded-xl border border-gray-300 px-4 py-3 outline-none transition focus:border-blue-500"
+            className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-blue-500"
           />
           {errors.school?.message && (
             <p className="mt-1 text-sm text-red-600">{errors.school.message}</p>
@@ -186,7 +199,7 @@ export default function RegisterForm() {
             type="text"
             placeholder="Không bắt buộc"
             {...register("phone")}
-            className="mt-2 w-full rounded-xl border border-gray-300 px-4 py-3 outline-none transition focus:border-blue-500"
+            className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-blue-500"
           />
           {errors.phone?.message && (
             <p className="mt-1 text-sm text-red-600">{errors.phone.message}</p>
@@ -195,7 +208,7 @@ export default function RegisterForm() {
       </div>
 
       {submitError && (
-        <div className="mt-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="mt-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {submitError}
         </div>
       )}
@@ -203,9 +216,9 @@ export default function RegisterForm() {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="mt-6 w-full rounded-xl bg-blue-600 px-5 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
+        className="mt-6 w-full rounded-lg bg-blue-600 px-5 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
       >
-        {isSubmitting ? "Đang đăng ký..." : "Đăng ký"}
+        {isSubmitting ? "Đang tạo tài khoản..." : "Tạo tài khoản"}
       </button>
 
       <p className="mt-5 text-center text-sm text-gray-600">

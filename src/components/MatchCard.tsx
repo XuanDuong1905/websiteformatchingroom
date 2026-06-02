@@ -6,14 +6,15 @@ type MatchCardProps = {
 };
 
 function ScoreRow({ label, value }: { label: string; value: number }) {
-  const percent = value <= 1 ? value * 100 : value;
+  const safeValue = Number.isFinite(value) ? value : 0;
+  const percent = safeValue <= 1 ? safeValue * 100 : safeValue;
 
   return (
     <div className="space-y-1">
-      <div className="flex items-center justify-between text-sm">
+      <div className="flex items-center justify-between gap-4 text-sm">
         <span className="text-gray-600">{label}</span>
         <span className="font-medium text-gray-900">
-          {formatPercentScore(value)}
+          {formatPercentScore(safeValue)}
         </span>
       </div>
 
@@ -31,7 +32,7 @@ export default function MatchCard({ match }: MatchCardProps) {
   const { user, matchScore, scores, reasons } = match;
 
   return (
-    <article className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition hover:shadow-md">
+    <article className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:shadow-md">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h3 className="text-xl font-semibold text-gray-900">
@@ -45,7 +46,7 @@ export default function MatchCard({ match }: MatchCardProps) {
           </div>
         </div>
 
-        <div className="rounded-2xl bg-blue-50 px-4 py-3 text-center">
+        <div className="rounded-lg bg-blue-50 px-4 py-3 text-center">
           <p className="text-sm font-medium text-blue-700">Độ phù hợp</p>
           <p className="text-3xl font-bold text-blue-700">
             {formatPercentScore(matchScore)}

@@ -18,6 +18,7 @@ export function formatGender(value?: string) {
   if (value === "male") return "Nam";
   if (value === "female") return "Nữ";
   if (value === "any") return "Bất kỳ";
+  if (value === "other") return "Khác";
   return "Chưa cập nhật";
 }
 

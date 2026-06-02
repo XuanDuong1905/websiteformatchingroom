@@ -18,15 +18,28 @@ function getStoredUserId() {
 
   if (storedUser) {
     try {
-      const user = JSON.parse(storedUser);
-      return Number(user?.id || user?.userId) || null;
+      const user = JSON.parse(storedUser) as Record<string, unknown>;
+      const userId = user.id || user.userId;
+      return typeof userId === "number" || typeof userId === "string"
+        ? Number(userId) || null
+        : null;
     } catch {
       return null;
     }
   }
 
   const storedUserId = localStorage.getItem("userId");
-  return storedUserId ? Number(storedUserId) : null;
+  return storedUserId ? Number(storedUserId) || null : null;
+}
+
+function getMatchesData(result: unknown): MatchItem[] {
+  if (Array.isArray(result)) return result as MatchItem[];
+  if (!result || typeof result !== "object") return [];
+
+  const record = result as Record<string, unknown>;
+  const data = record.data || record.matches || record.results;
+
+  return Array.isArray(data) ? (data as MatchItem[]) : [];
 }
 
 export default function MatchesPage() {
@@ -57,7 +70,7 @@ export default function MatchesPage() {
 
         setState({
           userId: currentUserId,
-          matches: result?.data || [],
+          matches: getMatchesData(result),
           isLoading: false,
           error: "",
         });
@@ -83,7 +96,9 @@ export default function MatchesPage() {
     <main className="min-h-screen bg-gray-50 px-4 py-10">
       <section className="mx-auto max-w-5xl">
         <div className="mb-8">
-          <p className="text-sm font-medium text-blue-600">Ghép bạn ở cùng</p>
+          <p className="text-sm font-medium text-blue-600">
+            Ghép bạn ở cùng
+          </p>
           <h1 className="mt-2 text-3xl font-bold text-gray-900">
             Kết quả matching
           </h1>
@@ -94,14 +109,14 @@ export default function MatchesPage() {
         </div>
 
         {userId && (
-          <div className="mb-6 rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-700">
+          <div className="mb-6 rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-700">
             Đang xem kết quả cho userId:{" "}
             <span className="font-semibold">{userId}</span>
           </div>
         )}
 
         {isLoading && (
-          <div className="rounded-2xl border border-gray-200 bg-white p-8 text-center shadow-sm">
+          <div className="rounded-xl border border-gray-200 bg-white p-8 text-center shadow-sm">
             <p className="font-medium text-gray-900">
               Đang tải danh sách người phù hợp...
             </p>
@@ -112,14 +127,14 @@ export default function MatchesPage() {
         )}
 
         {!isLoading && error && (
-          <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-red-700">
+          <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-red-700">
             <h2 className="font-semibold">Không thể tải kết quả</h2>
             <p className="mt-2 text-sm">{error}</p>
           </div>
         )}
 
         {!isLoading && !error && matches.length === 0 && (
-          <div className="rounded-2xl border border-gray-200 bg-white p-8 text-center shadow-sm">
+          <div className="rounded-xl border border-gray-200 bg-white p-8 text-center shadow-sm">
             <h2 className="text-lg font-semibold text-gray-900">
               Chưa tìm thấy người ở ghép phù hợp
             </h2>

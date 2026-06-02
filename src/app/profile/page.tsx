@@ -12,8 +12,8 @@ export default function ProfilePage() {
             Tạo hồ sơ tìm bạn ở ghép
           </h1>
           <p className="mt-3 max-w-2xl text-gray-600">
-            Điền thông tin ngân sách, khu vực và thói quen sinh hoạt để hệ thống
-            có thể ghép bạn cùng phòng phù hợp.
+            Điền thông tin ngân sách, khu vực và thói quen sinh hoạt để hệ
+            thống có thể ghép bạn cùng phòng phù hợp.
           </p>
         </div>
 

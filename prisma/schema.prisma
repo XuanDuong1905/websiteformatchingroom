@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,12 +6,382 @@ datasource db {
   provider = "mysql"
 }
 
+enum UserRole {
+  student
+  owner
+  admin
+}
+
+enum Gender {
+  male
+  female
+  other
+  unknown
+}
+
+enum VerificationStatus {
+  unverified
+  pending
+  verified
+  rejected
+}
+
+enum PrivacyLevel {
+  low
+  medium
+  high
+  unknown
+}
+
+enum CleaningFrequency {
+  daily
+  weekly
+  monthly
+  rarely
+  unknown
+}
+
+enum NoiseLevel {
+  low
+  medium
+  high
+  unknown
+}
+
+enum GuestFrequency {
+  never
+  rarely
+  sometimes
+  often
+  unknown
+}
+
+enum RoomStatus {
+  draft
+  pending
+  active
+  rented
+  hidden
+  warning
+  deleted
+}
+
+enum SearchRequestStatus {
+  active
+  paused
+  closed
+}
+
+enum MatchStatus {
+  suggested
+  viewed
+  accepted
+  rejected
+  expired
+}
+
+enum ReviewType {
+  room
+  roommate
+  owner
+}
+
+enum RiskType {
+  fake_post
+  wrong_information
+  hidden_cost
+  unclear_contract
+  deposit_scam
+  bad_roommate_behavior
+  unsafe_location
+  other
+}
+
+enum RiskSeverity {
+  low
+  medium
+  high
+}
+
+enum ReportStatus {
+  pending
+  reviewing
+  resolved
+  rejected
+}
+
 model User {
+  id              Int      @id @default(autoincrement())
+  fullName        String   @db.VarChar(100)
+  email           String   @unique @db.VarChar(150)
+  passwordHash    String   @db.VarChar(255)
+  phone           String?  @db.VarChar(20)
+  avatarUrl       String?  @db.VarChar(500)
+  gender          Gender   @default(unknown)
+  role            UserRole @default(student)
+  reputationScore Decimal  @default(0.00) @db.Decimal(5, 2)
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  profile          UserProfile?
+  lifestyleProfile LifestyleProfile?
+  rooms            Room[]
+  searchRequests   SearchRequest[]
+
+  reviewsWritten  Review[] @relation("ReviewsWritten")
+  reviewsReceived Review[] @relation("ReviewsReceived")
+
+  reportsWritten  RiskReport[] @relation("ReportsWritten")
+  reportsReceived RiskReport[] @relation("ReportsReceived")
+  reportsHandled  RiskReport[] @relation("ReportsHandled")
+
+  matchingResults  MatchingResult[] @relation("UserMatches")
+  matchedByResults MatchingResult[] @relation("MatchedUserMatches")
+
+  @@map("users")
+}
+
+model UserProfile {
+  id                Int          @id @default(autoincrement())
+  userId            Int          @unique
+  schoolName        String?      @db.VarChar(150)
+  major             String?      @db.VarChar(150)
+  birthYear         Int?
+  currentAddress    String?      @db.VarChar(255)
+  preferredDistrict String?      @db.VarChar(100)
+  bio               String?      @db.Text
+  privacyLevel      PrivacyLevel @default(unknown)
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_profiles")
+}
+
+model LifestyleProfile {
+  id                Int               @id @default(autoincrement())
+  userId            Int               @unique
+  budgetMin         Int?
+  budgetMax         Int?
+  sleepTime         DateTime?         @db.Time(0)
+  wakeTime          DateTime?         @db.Time(0)
+  cleaningFrequency CleaningFrequency @default(unknown)
+  noiseTolerance    NoiseLevel        @default(unknown)
+  privacyPreference PrivacyLevel      @default(unknown)
+  smoking           Boolean           @default(false)
+  petFriendly       Boolean           @default(false)
+  guestFrequency    GuestFrequency    @default(unknown)
+  cookingFrequency  GuestFrequency    @default(unknown)
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("lifestyle_profiles")
+}
+
+model Room {
+  id                 Int                @id @default(autoincrement())
+  ownerId            Int
+  title              String             @db.VarChar(200)
+  description        String?            @db.Text
+  address            String             @db.VarChar(255)
+  district           String             @db.VarChar(100)
+  ward               String?            @db.VarChar(100)
+  latitude           Decimal?           @db.Decimal(10, 8)
+  longitude          Decimal?           @db.Decimal(11, 8)
+  price              Int
+  deposit            Int                @default(0)
+  area               Decimal?           @db.Decimal(6, 2)
+  electricityFee     Int                @default(0)
+  waterFee           Int                @default(0)
+  wifiFee            Int                @default(0)
+  parkingFee         Int                @default(0)
+  otherFee           Int                @default(0)
+  maxPeople          Int                @default(1)
+  currentPeople      Int                @default(0)
+  availableSlots     Int                @default(1)
+  hasContract        Boolean            @default(false)
+  minStayMonths      Int                @default(1)
+  availableFrom      DateTime?          @db.Date
+  verificationStatus VerificationStatus @default(unverified)
+  riskScore          Int                @default(0)
+  status             RoomStatus         @default(pending)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  owner         User             @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  images        RoomImage[]
+  amenities     RoomAmenity[]
+  rules         RoomRule?
+  searchMatches MatchingResult[]
+  reviews       Review[]
+  riskReports   RiskReport[]
+
+  @@index([ownerId])
+  @@index([district])
+  @@index([price])
+  @@index([status])
+  @@index([riskScore])
+  @@map("rooms")
+}
+
+model RoomImage {
+  id                 Int      @id @default(autoincrement())
+  roomId             Int
+  imageUrl           String   @db.VarChar(500)
+  cloudinaryPublicId String?  @db.VarChar(255)
+  isCover            Boolean  @default(false)
+  sortOrder          Int      @default(0)
+  createdAt          DateTime @default(now())
+
+  room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@index([roomId])
+  @@map("room_images")
+}
+
+model Amenity {
   id        Int      @id @default(autoincrement())
-  name      String
-  email     String   @unique
-  password  String
-  role      String   @default("USER")
+  name      String   @unique @db.VarChar(100)
+  icon      String?  @db.VarChar(100)
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+
+  rooms RoomAmenity[]
+
+  @@map("amenities")
+}
+
+model RoomAmenity {
+  roomId    Int
+  amenityId Int
+
+  room    Room    @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  amenity Amenity @relation(fields: [amenityId], references: [id], onDelete: Cascade)
+
+  @@id([roomId, amenityId])
+  @@map("room_amenities")
+}
+
+model RoomRule {
+  id             Int       @id @default(autoincrement())
+  roomId         Int       @unique
+  allowSmoking   Boolean   @default(false)
+  allowPet       Boolean   @default(false)
+  allowGuest     Boolean   @default(false)
+  curfewTime     DateTime? @db.Time(0)
+  cookingAllowed Boolean   @default(true)
+  parkingAllowed Boolean   @default(false)
+  note           String?   @db.Text
+
+  room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@map("room_rules")
+}
+
+model SearchRequest {
+  id                  Int                 @id @default(autoincrement())
+  userId              Int
+  targetDistrict      String?             @db.VarChar(100)
+  budgetMin           Int?
+  budgetMax           Int?
+  maxDistanceKm       Decimal?            @db.Decimal(5, 2)
+  schoolOrWorkplace   String?             @db.VarChar(255)
+  needContract        Boolean             @default(false)
+  needParking         Boolean             @default(false)
+  needPrivateWc       Boolean             @default(false)
+  preferredMoveInDate DateTime?           @db.Date
+  status              SearchRequestStatus @default(active)
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  matchingResults MatchingResult[]
+
+  @@index([userId])
+  @@index([targetDistrict])
+  @@index([status])
+  @@map("search_requests")
+}
+
+model MatchingResult {
+  id                 Int         @id @default(autoincrement())
+  requestId          Int?
+  userId             Int
+  matchedUserId      Int?
+  roomId             Int?
+  budgetScore        Decimal     @default(0.00) @db.Decimal(5, 2)
+  locationScore      Decimal     @default(0.00) @db.Decimal(5, 2)
+  lifestyleScore     Decimal     @default(0.00) @db.Decimal(5, 2)
+  amenityScore       Decimal     @default(0.00) @db.Decimal(5, 2)
+  trustScore         Decimal     @default(0.00) @db.Decimal(5, 2)
+  compatibilityScore Decimal     @default(0.00) @db.Decimal(5, 2)
+  riskScore          Int         @default(0)
+  finalScore         Decimal     @default(0.00) @db.Decimal(5, 2)
+  reason             String?     @db.Text
+  status             MatchStatus @default(suggested)
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+
+  request     SearchRequest? @relation(fields: [requestId], references: [id], onDelete: SetNull)
+  user        User           @relation("UserMatches", fields: [userId], references: [id], onDelete: Cascade)
+  matchedUser User?          @relation("MatchedUserMatches", fields: [matchedUserId], references: [id], onDelete: SetNull)
+  room        Room?          @relation(fields: [roomId], references: [id], onDelete: SetNull)
+
+  @@index([requestId])
+  @@index([userId])
+  @@index([matchedUserId])
+  @@index([roomId])
+  @@index([finalScore])
+  @@map("matching_results")
+}
+
+model Review {
+  id             Int        @id @default(autoincrement())
+  reviewerId     Int
+  reviewedUserId Int?
+  roomId         Int?
+  rating         Int
+  comment        String?    @db.Text
+  reviewType     ReviewType
+  isVisible      Boolean    @default(true)
+  createdAt      DateTime   @default(now())
+
+  reviewer     User  @relation("ReviewsWritten", fields: [reviewerId], references: [id], onDelete: Cascade)
+  reviewedUser User? @relation("ReviewsReceived", fields: [reviewedUserId], references: [id], onDelete: SetNull)
+  room         Room? @relation(fields: [roomId], references: [id], onDelete: SetNull)
+
+  @@index([reviewerId])
+  @@index([reviewedUserId])
+  @@index([roomId])
+  @@map("reviews")
+}
+
+model RiskReport {
+  id             Int          @id @default(autoincrement())
+  reporterId     Int
+  roomId         Int?
+  reportedUserId Int?
+  riskType       RiskType
+  description    String       @db.Text
+  evidenceUrl    String?      @db.VarChar(500)
+  severity       RiskSeverity @default(medium)
+  status         ReportStatus @default(pending)
+  handledBy      Int?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  reporter     User  @relation("ReportsWritten", fields: [reporterId], references: [id], onDelete: Cascade)
+  reportedUser User? @relation("ReportsReceived", fields: [reportedUserId], references: [id], onDelete: SetNull)
+  handler      User? @relation("ReportsHandled", fields: [handledBy], references: [id], onDelete: SetNull)
+  room         Room? @relation(fields: [roomId], references: [id], onDelete: SetNull)
+
+  @@index([reporterId])
+  @@index([reportedUserId])
+  @@index([handledBy])
+  @@index([roomId])
+  @@index([status])
+  @@map("risk_reports")
 }

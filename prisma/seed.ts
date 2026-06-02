@@ -629,22 +629,19 @@ async function main() {
     return room;
   };
 
-  const imageUrls = [
-    "https://res.cloudinary.com/demo/image/upload/sample.jpg",
-    "https://res.cloudinary.com/demo/image/upload/docs/models.jpg",
-  ];
+  const cloudinaryRoomImageBaseUrl = "https://res.cloudinary.com/dxtavkgyh/image/upload/roommate-finder/rooms";
   await prisma.roomImage.createMany({
-    data: [...rooms.entries()].flatMap(([key, room], roomIndex) => [
+    data: [...rooms.entries()].flatMap(([key, room]) => [
       {
         roomId: room.id,
-        imageUrl: imageUrls[roomIndex % imageUrls.length],
+        imageUrl: `${cloudinaryRoomImageBaseUrl}/${key}-cover.webp`,
         cloudinaryPublicId: `roommate-finder/rooms/${key}-cover`,
         isCover: true,
         sortOrder: 0,
       },
       {
         roomId: room.id,
-        imageUrl: imageUrls[(roomIndex + 1) % imageUrls.length],
+        imageUrl: `${cloudinaryRoomImageBaseUrl}/${key}-gallery-1.webp`,
         cloudinaryPublicId: `roommate-finder/rooms/${key}-gallery-1`,
         isCover: false,
         sortOrder: 1,

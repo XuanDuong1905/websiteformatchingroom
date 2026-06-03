@@ -11,6 +11,7 @@ import {
   type ProfilePayload,
   updateProfile,
 } from "@/lib/api/profileApi";
+import { getStoredUserId } from "@/lib/auth/storage";
 
 const profileSchema = z
   .object({
@@ -25,8 +26,15 @@ const profileSchema = z
     acceptPet: z.boolean(),
     isSmoker: z.boolean(),
     acceptSmoking: z.boolean(),
-    sleepTime: z.string().min(1, "Vui lòng chọn giờ ngủ"),
-    wakeTime: z.string().min(1, "Vui lòng chọn giờ thức dậy"),
+    sleepTime: z
+      .string()
+      .regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Giờ ngủ phải có định dạng HH:mm"),
+    wakeTime: z
+      .string()
+      .regex(
+        /^([01]\d|2[0-3]):[0-5]\d$/,
+        "Giờ thức dậy phải có định dạng HH:mm",
+      ),
     cleaningFrequency: z.enum(["daily", "weekly", "monthly"]),
     privacyLevel: z.enum(["low", "medium", "high"]),
     noiseLevel: z.enum(["low", "medium", "high"]),
@@ -42,7 +50,7 @@ type ProfileFormInput = z.input<typeof profileSchema>;
 type ProfileFormValues = z.output<typeof profileSchema>;
 
 const defaultValues: ProfileFormValues = {
-  userId: 1,
+  userId: 0,
   budgetMin: 1500000,
   budgetMax: 3000000,
   preferredDistrict: "Thu Duc",
@@ -65,45 +73,104 @@ function FieldError({ message }: { message?: string }) {
   return <p className="mt-1 text-sm text-red-600">{message}</p>;
 }
 
-function getStoredUserId() {
-  if (typeof window === "undefined") return null;
-
-  const storedUser = localStorage.getItem("user");
-  if (storedUser) {
-    try {
-      const user = JSON.parse(storedUser) as Record<string, unknown>;
-      const userId = user.id || user.userId;
-      return typeof userId === "number" || typeof userId === "string"
-        ? Number(userId) || null
-        : null;
-    } catch {
-      return null;
-    }
-  }
-
-  const storedUserId = localStorage.getItem("userId");
-  return storedUserId ? Number(storedUserId) || null : null;
-}
-
 function getProfileData(result: unknown): Partial<ProfilePayload> | null {
   if (!result || typeof result !== "object") return null;
 
   const record = result as Record<string, unknown>;
   const data = record.data || record.profile || record;
-  return data && typeof data === "object"
-    ? (data as Partial<ProfilePayload>)
-    : null;
+  if (!data || typeof data !== "object") return null;
+
+  const profileRecord = data as Record<string, unknown>;
+  const userProfile =
+    profileRecord.profile && typeof profileRecord.profile === "object"
+      ? (profileRecord.profile as Record<string, unknown>)
+      : {};
+  const lifestyleProfile =
+    profileRecord.lifestyleProfile &&
+    typeof profileRecord.lifestyleProfile === "object"
+      ? (profileRecord.lifestyleProfile as Record<string, unknown>)
+      : {};
+
+  return {
+    ...profileRecord,
+    budgetMin: Number(lifestyleProfile.budgetMin ?? profileRecord.budgetMin) || undefined,
+    budgetMax: Number(lifestyleProfile.budgetMax ?? profileRecord.budgetMax) || undefined,
+    preferredDistrict:
+      String(userProfile.preferredDistrict ?? profileRecord.preferredDistrict ?? "") ||
+      undefined,
+    sleepTime: formatTimeValue(lifestyleProfile.sleepTime ?? profileRecord.sleepTime),
+    wakeTime: formatTimeValue(lifestyleProfile.wakeTime ?? profileRecord.wakeTime),
+    cleaningFrequency: String(
+      lifestyleProfile.cleaningFrequency ?? profileRecord.cleaningFrequency ?? "",
+    ) as ProfilePayload["cleaningFrequency"],
+    privacyLevel: String(
+      lifestyleProfile.privacyPreference ??
+        userProfile.privacyLevel ??
+        profileRecord.privacyLevel ??
+        "",
+    ) as ProfilePayload["privacyLevel"],
+    noiseLevel: String(
+      lifestyleProfile.noiseTolerance ?? profileRecord.noiseLevel ?? "",
+    ) as ProfilePayload["noiseLevel"],
+    guestFrequency: String(
+      lifestyleProfile.guestFrequency ?? profileRecord.guestFrequency ?? "",
+    ) as ProfilePayload["guestFrequency"],
+    isSmoker: Boolean(lifestyleProfile.smoking ?? profileRecord.isSmoker),
+    acceptSmoking: !Boolean(lifestyleProfile.smoking ?? profileRecord.isSmoker),
+    hasPet: Boolean(lifestyleProfile.petFriendly ?? profileRecord.hasPet),
+    acceptPet: Boolean(lifestyleProfile.petFriendly ?? profileRecord.acceptPet),
+  };
+}
+
+function formatTimeValue(value: unknown) {
+  if (!value) return undefined;
+
+  const text = String(value);
+  const match = text.match(/(\d{2}):(\d{2})/);
+  return match ? `${match[1]}:${match[2]}` : undefined;
 }
 
 function normalizeProfile(
   profile: Partial<ProfilePayload>,
   userId: number,
 ): ProfileFormValues {
-  return {
+  const nextValues = {
     ...defaultValues,
     ...profile,
     userId,
   };
+
+  return {
+    ...nextValues,
+    userId,
+    preferredGender: isOneOf(nextValues.preferredGender, ["male", "female", "any"])
+      ? nextValues.preferredGender
+      : defaultValues.preferredGender,
+    cleaningFrequency: isOneOf(nextValues.cleaningFrequency, [
+      "daily",
+      "weekly",
+      "monthly",
+    ])
+      ? nextValues.cleaningFrequency
+      : defaultValues.cleaningFrequency,
+    privacyLevel: isOneOf(nextValues.privacyLevel, ["low", "medium", "high"])
+      ? nextValues.privacyLevel
+      : defaultValues.privacyLevel,
+    noiseLevel: isOneOf(nextValues.noiseLevel, ["low", "medium", "high"])
+      ? nextValues.noiseLevel
+      : defaultValues.noiseLevel,
+    guestFrequency: isOneOf(nextValues.guestFrequency, [
+      "rare",
+      "sometimes",
+      "often",
+    ])
+      ? nextValues.guestFrequency
+      : defaultValues.guestFrequency,
+  };
+}
+
+function isOneOf<T extends string>(value: unknown, allowed: readonly T[]): value is T {
+  return typeof value === "string" && allowed.includes(value as T);
 }
 
 export default function ProfileForm() {
@@ -175,9 +242,11 @@ export default function ProfileForm() {
         setHasExistingProfile(true);
       }
 
-      localStorage.setItem("userId", String(values.userId));
+      window.localStorage.setItem("userId", String(values.userId));
       setSuccessMessage(
-        "Tạo hồ sơ thành công. Bạn có thể xem kết quả matching khi API sẵn sàng.",
+        hasExistingProfile
+          ? "Cập nhật hồ sơ thành công. Bạn có thể xem kết quả matching."
+          : "Tạo hồ sơ thành công. Bạn có thể xem kết quả matching.",
       );
     } catch (err) {
       setSubmitError(
@@ -383,7 +452,11 @@ export default function ProfileForm() {
           disabled={isSubmitting || isLoadingProfile}
           className="rounded-lg bg-blue-600 px-5 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
         >
-          {isSubmitting ? "Đang tạo hồ sơ..." : "Tạo hồ sơ"}
+          {isSubmitting
+            ? "Đang lưu hồ sơ..."
+            : hasExistingProfile
+              ? "Cập nhật hồ sơ"
+              : "Tạo hồ sơ"}
         </button>
 
         <Link

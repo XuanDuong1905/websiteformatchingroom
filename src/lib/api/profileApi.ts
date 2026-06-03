@@ -1,3 +1,5 @@
+import { getStoredToken } from "@/lib/auth/storage";
+
 export type PreferredGender = "male" | "female" | "any";
 export type Frequency = "daily" | "weekly" | "monthly";
 export type Level = "low" | "medium" | "high";
@@ -37,9 +39,7 @@ function getErrorMessage(data: unknown, fallback: string) {
 }
 
 function getAuthHeaders() {
-  if (typeof window === "undefined") return null;
-
-  const token = localStorage.getItem("token");
+  const token = getStoredToken();
   return token ? `Bearer ${token}` : null;
 }
 
@@ -69,10 +69,21 @@ async function request(path: string, options?: RequestInit) {
   return data;
 }
 
+function toProfileRequestBody(payload: Partial<ProfilePayload>) {
+  return {
+    ...payload,
+    // TODO(Member 4): Confirm final profile API field names for smoking/pets/privacy/noise.
+    smoking: payload.isSmoker,
+    petFriendly: payload.acceptPet,
+    privacyPreference: payload.privacyLevel,
+    noiseTolerance: payload.noiseLevel,
+  };
+}
+
 export async function createProfile(payload: ProfilePayload) {
   return request("/api/profiles", {
     method: "POST",
-    body: JSON.stringify(payload),
+    body: JSON.stringify(toProfileRequestBody(payload)),
   });
 }
 
@@ -92,6 +103,6 @@ export async function updateProfile(
 ) {
   return request(`/api/profiles/${userId}`, {
     method: "PUT",
-    body: JSON.stringify(payload),
+    body: JSON.stringify(toProfileRequestBody(payload)),
   });
 }

@@ -7,6 +7,8 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { registerUser } from "@/lib/api/authApi";
+import { saveAuthResult } from "@/lib/auth/storage";
+import { AuthButton, AuthInput } from "@/components/auth";
 
 const registerSchema = z
   .object({
@@ -14,9 +16,6 @@ const registerSchema = z
     email: z.string().email("Email không hợp lệ"),
     password: z.string().min(6, "Mật khẩu phải có ít nhất 6 ký tự"),
     confirmPassword: z.string().min(1, "Vui lòng nhập lại mật khẩu"),
-    gender: z.enum(["male", "female", "other"]),
-    school: z.string().min(1, "Vui lòng nhập trường học"),
-    phone: z.string().optional(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Mật khẩu nhập lại không khớp",
@@ -24,28 +23,6 @@ const registerSchema = z
   });
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
-
-function storeAuthResult(result: unknown) {
-  if (!result || typeof result !== "object") return;
-
-  const data = result as Record<string, unknown>;
-  const token = data.token;
-  const user = data.user;
-
-  if (typeof token === "string") {
-    localStorage.setItem("token", token);
-  }
-
-  if (user && typeof user === "object") {
-    const userRecord = user as Record<string, unknown>;
-    localStorage.setItem("user", JSON.stringify(userRecord));
-
-    const userId = userRecord.id || userRecord.userId;
-    if (typeof userId === "number" || typeof userId === "string") {
-      localStorage.setItem("userId", String(userId));
-    }
-  }
-}
 
 export default function RegisterForm() {
   const router = useRouter();
@@ -62,9 +39,6 @@ export default function RegisterForm() {
       email: "",
       password: "",
       confirmPassword: "",
-      gender: "male",
-      school: "",
-      phone: "",
     },
   });
 
@@ -72,17 +46,15 @@ export default function RegisterForm() {
     try {
       setSubmitError("");
 
-      // TODO: Confirm with Member 1 whether phone/gender/school are accepted.
+      // TODO(Member 1): Confirm whether register accepts only fullName/email/password.
       const result = await registerUser({
         fullName: values.fullName,
         email: values.email,
         password: values.password,
-        gender: values.gender,
-        school: values.school,
-        phone: values.phone,
       });
 
-      storeAuthResult(result);
+      saveAuthResult(result);
+      // TODO(Member 1): Confirm whether register should auto-login or redirect to login.
       router.push("/profile");
     } catch (err) {
       setSubmitError(
@@ -92,138 +64,55 @@ export default function RegisterForm() {
   }
 
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm"
-    >
-      <div className="grid gap-5 md:grid-cols-2">
-        <div className="md:col-span-2">
-          <label className="text-sm font-medium text-gray-700">
-            Họ và tên
-          </label>
-          <input
-            type="text"
-            placeholder="Nguyễn Văn A"
-            {...register("fullName")}
-            className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-blue-500"
-          />
-          {errors.fullName?.message && (
-            <p className="mt-1 text-sm text-red-600">
-              {errors.fullName.message}
-            </p>
-          )}
-        </div>
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+      <AuthInput
+        label="Họ và tên"
+        type="text"
+        placeholder="Nguyễn Văn A"
+        error={errors.fullName?.message}
+        {...register("fullName")}
+      />
 
-        <div className="md:col-span-2">
-          <label className="text-sm font-medium text-gray-700">Email</label>
-          <input
-            type="email"
-            placeholder="student@example.com"
-            {...register("email")}
-            className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-blue-500"
-          />
-          {errors.email?.message && (
-            <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
-          )}
-        </div>
+      <AuthInput
+        label="Email sinh viên"
+        type="email"
+        placeholder="email@sv.edu.vn"
+        error={errors.email?.message}
+        {...register("email")}
+      />
 
-        <div>
-          <label className="text-sm font-medium text-gray-700">Mật khẩu</label>
-          <input
-            type="password"
-            placeholder="Ít nhất 6 ký tự"
-            {...register("password")}
-            className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-blue-500"
-          />
-          {errors.password?.message && (
-            <p className="mt-1 text-sm text-red-600">
-              {errors.password.message}
-            </p>
-          )}
-        </div>
+      <AuthInput
+        label="Mật khẩu"
+        type="password"
+        placeholder="••••••••"
+        error={errors.password?.message}
+        {...register("password")}
+      />
 
-        <div>
-          <label className="text-sm font-medium text-gray-700">
-            Nhập lại mật khẩu
-          </label>
-          <input
-            type="password"
-            placeholder="Nhập lại mật khẩu"
-            {...register("confirmPassword")}
-            className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-blue-500"
-          />
-          {errors.confirmPassword?.message && (
-            <p className="mt-1 text-sm text-red-600">
-              {errors.confirmPassword.message}
-            </p>
-          )}
-        </div>
-
-        <div>
-          <label className="text-sm font-medium text-gray-700">
-            Giới tính
-          </label>
-          <select
-            {...register("gender")}
-            className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-blue-500"
-          >
-            <option value="male">Nam</option>
-            <option value="female">Nữ</option>
-            <option value="other">Khác</option>
-          </select>
-          {errors.gender?.message && (
-            <p className="mt-1 text-sm text-red-600">{errors.gender.message}</p>
-          )}
-        </div>
-
-        <div>
-          <label className="text-sm font-medium text-gray-700">
-            Trường học
-          </label>
-          <input
-            type="text"
-            placeholder="Ví dụ: HCMUS, UIT, UTE..."
-            {...register("school")}
-            className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-blue-500"
-          />
-          {errors.school?.message && (
-            <p className="mt-1 text-sm text-red-600">{errors.school.message}</p>
-          )}
-        </div>
-
-        <div className="md:col-span-2">
-          <label className="text-sm font-medium text-gray-700">
-            Số điện thoại
-          </label>
-          <input
-            type="text"
-            placeholder="Không bắt buộc"
-            {...register("phone")}
-            className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-blue-500"
-          />
-          {errors.phone?.message && (
-            <p className="mt-1 text-sm text-red-600">{errors.phone.message}</p>
-          )}
-        </div>
-      </div>
+      <AuthInput
+        label="Xác nhận mật khẩu"
+        type="password"
+        placeholder="••••••••"
+        error={errors.confirmPassword?.message}
+        {...register("confirmPassword")}
+      />
 
       {submitError && (
-        <div className="mt-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {submitError}
         </div>
       )}
 
-      <button
-        type="submit"
-        disabled={isSubmitting}
-        className="mt-6 w-full rounded-lg bg-blue-600 px-5 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
-      >
-        {isSubmitting ? "Đang tạo tài khoản..." : "Tạo tài khoản"}
-      </button>
+      <AuthButton type="submit" isLoading={isSubmitting}>
+        Tạo tài khoản
+      </AuthButton>
 
-      <p className="mt-5 text-center text-sm text-gray-600">
+      <p className="text-center text-sm text-slate-500">
         Đã có tài khoản?{" "}
-        <Link href="/login" className="font-semibold text-blue-600">
+        <Link
+          href="/login"
+          className="font-semibold text-cyan-600 transition-colors hover:text-cyan-500"
+        >
           Đăng nhập
         </Link>
       </p>

@@ -1,24 +1,21 @@
 import RegisterForm from "@/components/RegisterForm";
+import { AuthLayout } from "@/components/auth";
 
 export default function RegisterPage() {
   return (
-    <main className="min-h-screen bg-gray-50 px-4 py-10">
-      <section className="mx-auto grid max-w-5xl gap-8 md:grid-cols-[1fr_520px] md:items-center">
+    <AuthLayout>
+      <div className="space-y-8">
         <div>
-          <p className="text-sm font-medium text-blue-600">
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-cyan-600">
             Ghép Trọ - Ghép Bạn
           </p>
-          <h1 className="mt-3 text-4xl font-bold text-gray-900">
+          <h1 className="mt-4 text-3xl font-bold text-slate-950 sm:text-4xl">
             Tạo tài khoản
           </h1>
-          <p className="mt-4 text-gray-600">
-            Đăng ký tài khoản để tạo hồ sơ ở ghép, tìm bạn cùng phòng phù hợp và
-            xem kết quả matching dựa trên thói quen sinh hoạt.
-          </p>
         </div>
 
         <RegisterForm />
-      </section>
-    </main>
+      </div>
+    </AuthLayout>
   );
 }

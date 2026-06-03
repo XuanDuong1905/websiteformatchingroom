@@ -1,19 +1,21 @@
+import { getStoredToken } from "@/lib/auth/storage";
+
 export type MatchItem = {
   user: {
     id: number;
-    fullName: string;
-    gender: string;
-    school: string;
-    reputationScore: number;
+    fullName?: string | null;
+    gender?: string | null;
+    school?: string | null;
+    reputationScore?: number | null;
   };
   matchScore: number;
-  scores: {
-    sleepScore: number;
-    cleaningScore: number;
-    privacyScore: number;
-    noiseScore: number;
-  };
-  reasons: string[];
+  scores?: {
+    sleepScore?: number | null;
+    cleaningScore?: number | null;
+    privacyScore?: number | null;
+    noiseScore?: number | null;
+  } | null;
+  reasons?: string[] | null;
 };
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "";
@@ -32,9 +34,7 @@ function getErrorMessage(data: unknown, fallback: string) {
 }
 
 function getAuthHeaders() {
-  if (typeof window === "undefined") return null;
-
-  const token = localStorage.getItem("token");
+  const token = getStoredToken();
   return token ? `Bearer ${token}` : null;
 }
 

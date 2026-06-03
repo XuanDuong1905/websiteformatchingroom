@@ -7,6 +7,8 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { login } from "@/lib/api/authApi";
+import { saveAuthResult } from "@/lib/auth/storage";
+import { AuthButton, AuthInput } from "@/components/auth";
 
 const loginSchema = z.object({
   email: z.string().email("Email không hợp lệ"),
@@ -14,28 +16,6 @@ const loginSchema = z.object({
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
-
-function storeAuthResult(result: unknown) {
-  if (!result || typeof result !== "object") return;
-
-  const data = result as Record<string, unknown>;
-  const token = data.token;
-  const user = data.user;
-
-  if (typeof token === "string") {
-    localStorage.setItem("token", token);
-  }
-
-  if (user && typeof user === "object") {
-    const userRecord = user as Record<string, unknown>;
-    localStorage.setItem("user", JSON.stringify(userRecord));
-
-    const userId = userRecord.id || userRecord.userId;
-    if (typeof userId === "number" || typeof userId === "string") {
-      localStorage.setItem("userId", String(userId));
-    }
-  }
-}
 
 export default function LoginForm() {
   const router = useRouter();
@@ -58,8 +38,9 @@ export default function LoginForm() {
       setSubmitError("");
 
       const result = await login(values);
-      storeAuthResult(result);
+      saveAuthResult(result);
 
+      // TODO(Member 1): Confirm final post-login route once auth flow is finalized.
       router.push("/profile");
     } catch (err) {
       setSubmitError(
@@ -69,57 +50,39 @@ export default function LoginForm() {
   }
 
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm"
-    >
-      <div className="space-y-5">
-        <div>
-          <label className="text-sm font-medium text-gray-700">Email</label>
-          <input
-            type="email"
-            placeholder="student@example.com"
-            {...register("email")}
-            className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-blue-500"
-          />
-          {errors.email?.message && (
-            <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
-          )}
-        </div>
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <AuthInput
+        label="Email sinh viên"
+        type="email"
+        placeholder="email@sv.edu.vn"
+        error={errors.email?.message}
+        {...register("email")}
+      />
 
-        <div>
-          <label className="text-sm font-medium text-gray-700">Mật khẩu</label>
-          <input
-            type="password"
-            placeholder="Nhập mật khẩu"
-            {...register("password")}
-            className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-blue-500"
-          />
-          {errors.password?.message && (
-            <p className="mt-1 text-sm text-red-600">
-              {errors.password.message}
-            </p>
-          )}
-        </div>
-      </div>
+      <AuthInput
+        label="Mật khẩu"
+        type="password"
+        placeholder="••••••••"
+        error={errors.password?.message}
+        {...register("password")}
+      />
 
       {submitError && (
-        <div className="mt-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {submitError}
         </div>
       )}
 
-      <button
-        type="submit"
-        disabled={isSubmitting}
-        className="mt-6 w-full rounded-lg bg-blue-600 px-5 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
-      >
-        {isSubmitting ? "Đang đăng nhập..." : "Đăng nhập"}
-      </button>
+      <AuthButton type="submit" isLoading={isSubmitting}>
+        Đăng nhập
+      </AuthButton>
 
-      <p className="mt-5 text-center text-sm text-gray-600">
+      <p className="text-center text-sm text-slate-500">
         Chưa có tài khoản?{" "}
-        <Link href="/register" className="font-semibold text-blue-600">
+        <Link
+          href="/register"
+          className="font-semibold text-cyan-600 transition-colors hover:text-cyan-500"
+        >
           Đăng ký
         </Link>
       </p>

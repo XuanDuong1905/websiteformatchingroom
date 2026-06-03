@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import MatchCard from "@/components/MatchCard";
 import { getMatches, type MatchItem } from "@/lib/api/matchApi";
+import { getStoredUserId } from "@/lib/auth/storage";
 
 type MatchesState = {
   userId: number | null;
@@ -11,27 +12,6 @@ type MatchesState = {
   error: string;
 };
 
-function getStoredUserId() {
-  if (typeof window === "undefined") return null;
-
-  const storedUser = localStorage.getItem("user");
-
-  if (storedUser) {
-    try {
-      const user = JSON.parse(storedUser) as Record<string, unknown>;
-      const userId = user.id || user.userId;
-      return typeof userId === "number" || typeof userId === "string"
-        ? Number(userId) || null
-        : null;
-    } catch {
-      return null;
-    }
-  }
-
-  const storedUserId = localStorage.getItem("userId");
-  return storedUserId ? Number(storedUserId) || null : null;
-}
-
 function getMatchesData(result: unknown): MatchItem[] {
   if (Array.isArray(result)) return result as MatchItem[];
   if (!result || typeof result !== "object") return [];
@@ -39,7 +19,24 @@ function getMatchesData(result: unknown): MatchItem[] {
   const record = result as Record<string, unknown>;
   const data = record.data || record.matches || record.results;
 
-  return Array.isArray(data) ? (data as MatchItem[]) : [];
+  if (Array.isArray(data)) return data as MatchItem[];
+
+  if (data && typeof data === "object") {
+    const nested = data as Record<string, unknown>;
+    if (Array.isArray(nested.data)) return nested.data as MatchItem[];
+    if (Array.isArray(nested.matches)) return nested.matches as MatchItem[];
+    if (Array.isArray(nested.results)) return nested.results as MatchItem[];
+  }
+
+  return [];
+}
+
+function sortMatches(matches: MatchItem[]) {
+  return [...matches].sort((a, b) => {
+    const left = Number.isFinite(a.matchScore) ? a.matchScore : 0;
+    const right = Number.isFinite(b.matchScore) ? b.matchScore : 0;
+    return right - left;
+  });
 }
 
 export default function MatchesPage() {
@@ -70,7 +67,7 @@ export default function MatchesPage() {
 
         setState({
           userId: currentUserId,
-          matches: getMatchesData(result),
+          matches: sortMatches(getMatchesData(result)),
           isLoading: false,
           error: "",
         });

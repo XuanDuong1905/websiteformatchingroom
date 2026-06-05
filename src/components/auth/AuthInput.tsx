@@ -11,7 +11,7 @@ export const AuthInput = forwardRef<HTMLInputElement, AuthInputProps>(
   ({ label, error, icon, className = "", ...props }, ref) => {
     return (
       <div className="w-full">
-        <label className="mb-2 block text-sm font-medium text-slate-700">
+        <label className="mb-2 block text-sm font-semibold text-slate-700">
           {label}
         </label>
 
@@ -24,7 +24,7 @@ export const AuthInput = forwardRef<HTMLInputElement, AuthInputProps>(
 
           <input
             ref={ref}
-            className={`w-full rounded-2xl border bg-slate-50 py-3 pr-4 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-200 ${
+            className={`w-full rounded-2xl border bg-slate-50 py-3 pr-4 text-base font-medium text-slate-900 outline-none transition placeholder:font-normal placeholder:text-slate-400 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-200 ${
               icon ? "pl-11" : "pl-4"
             } ${error ? "border-red-300" : "border-slate-200"} ${className}`}
             {...props}

@@ -21,8 +21,8 @@ function hasStoredAuth() {
 
   return Boolean(
     localStorage.getItem("token") ||
-      localStorage.getItem("user") ||
-      localStorage.getItem("userId"),
+    localStorage.getItem("user") ||
+    localStorage.getItem("userId"),
   );
 }
 
@@ -55,9 +55,12 @@ export default function AppNav() {
   const navItems = isLoggedIn ? userNavItems : guestNavItems;
 
   return (
-    <header className="border-b border-gray-200 bg-white">
+    <header className="border-b border-slate-100 bg-white/90 backdrop-blur">
       <nav className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
-        <Link href="/" className="text-lg font-bold text-blue-600">
+        <Link
+          href="/"
+          className="text-base font-semibold tracking-tight text-slate-900 transition hover:text-cyan-700"
+        >
           Ghép Trọ - Ghép Bạn
         </Link>
 
@@ -66,7 +69,7 @@ export default function AppNav() {
             <Link
               key={item.href}
               href={item.href}
-              className="rounded-full px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-blue-50 hover:text-blue-700"
+              className="rounded-full px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-cyan-50 hover:text-cyan-700"
             >
               {item.label}
             </Link>
@@ -76,7 +79,7 @@ export default function AppNav() {
             <button
               type="button"
               onClick={handleLogout}
-              className="rounded-full px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-red-50 hover:text-red-700"
+              className="rounded-full px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-rose-50 hover:text-rose-700"
             >
               Đăng xuất
             </button>

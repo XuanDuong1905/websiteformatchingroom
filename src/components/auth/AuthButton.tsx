@@ -11,7 +11,7 @@ export const AuthButton = forwardRef<HTMLButtonElement, AuthButtonProps>(
       <button
         ref={ref}
         disabled={disabled || isLoading}
-        className={`w-full rounded-2xl bg-gradient-to-r from-cyan-600 to-sky-600 px-4 py-3 text-sm font-semibold text-white shadow transition duration-200 hover:from-cyan-700 hover:to-sky-700 focus:outline-none focus:ring-2 focus:ring-cyan-300 focus:ring-offset-2 focus:ring-offset-slate-50 disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
+        className={`w-full rounded-2xl bg-gradient-to-r from-cyan-600 to-sky-600 px-4 py-3 text-base font-semibold text-white shadow transition duration-200 hover:from-cyan-700 hover:to-sky-700 focus:outline-none focus:ring-2 focus:ring-cyan-300 focus:ring-offset-2 focus:ring-offset-slate-50 disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
         {...props}
       >
         {isLoading ? (

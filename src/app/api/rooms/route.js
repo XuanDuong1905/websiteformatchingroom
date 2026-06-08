@@ -235,3 +235,83 @@ export async function GET(request) {
   }
 }
 
+export async function POST(request) {
+  try {
+    const body = await request.json();
+
+    const {
+      ownerId,
+      title,
+      description,
+      address,
+      district,
+      ward,
+      latitude,
+      longitude,
+      price,
+      deposit,
+      area,
+      electricityFee,
+      waterFee,
+      wifiFee,
+      parkingFee,
+      otherFee,
+      maxPeople,
+      availableSlots,
+      hasContract,
+      minStayMonths,
+      availableFrom,
+    } = body;
+
+    if (!ownerId || !title || !address || !district || !price) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Thiếu thông tin bắt buộc",
+        },
+        { status: 400 }
+      );
+    }
+
+    const room = await prisma.room.create({
+      data: {
+        ownerId: Number(ownerId),
+        title,
+        description,
+        address,
+        district,
+        ward,
+        price: Number(price),
+        deposit: deposit ? Number(deposit) : 0,
+        area: area ? Number(area) : null,
+        electricityFee: electricityFee ? Number(electricityFee) : 0,
+        waterFee: waterFee ? Number(waterFee) : 0,
+        wifiFee: wifiFee ? Number(wifiFee) : 0,
+        parkingFee: parkingFee ? Number(parkingFee) : 0,
+        otherFee: otherFee ? Number(otherFee) : 0,
+        maxPeople: maxPeople ? Number(maxPeople) : 1,
+        availableSlots: availableSlots ? Number(availableSlots) : 1,
+        hasContract: Boolean(hasContract),
+        minStayMonths: minStayMonths ? Number(minStayMonths) : 1,
+        availableFrom: availableFrom ? new Date(availableFrom) : null,
+      },
+    });
+
+    return NextResponse.json(
+      {
+        success: true,
+        message: "Đăng phòng thành công",
+        data: room,
+      },
+      { status: 201 }
+    );
+  } catch (error) {
+    return NextResponse.json(
+      {
+        success: false,
+        message: "Lỗi máy chủ",
+      },
+      { status: 500 }
+    );
+  }
+}

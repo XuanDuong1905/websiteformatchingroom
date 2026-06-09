@@ -163,3 +163,61 @@ export async function PATCH(request, { params }) {
     );
   }
 }
+
+export async function DELETE(request, { params }) {
+  try {
+    const resolvedParams = await params;
+    const id = parseRoomId(resolvedParams.id);
+
+    if (!id) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "ID phòng không hợp lệ",
+        },
+        { status: 400 }
+      );
+    }
+
+    const existingRoom = await prisma.room.findFirst({
+      where: {
+        id,
+        status: {
+          not: "deleted",
+        },
+      },
+    });
+
+    if (!existingRoom) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Không tìm thấy phòng",
+        },
+        { status: 404 }
+      );
+    }
+
+    await prisma.room.update({
+      where: {
+        id,
+      },
+      data: {
+        status: "deleted",
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: "Xóa phòng thành công",
+    });
+  } catch (error) {
+    return NextResponse.json(
+      {
+        success: false,
+        message: "Lỗi máy chủ",
+      },
+      { status: 500 }
+    );
+  }
+}

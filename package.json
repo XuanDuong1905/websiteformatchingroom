@@ -12,6 +12,7 @@
     "@prisma/adapter-mariadb": "^7.8.0",
     "@prisma/client": "^7.8.0",
     "bcrypt": "^6.0.0",
+    "cloudinary": "^2.10.0",
     "mariadb": "^3.5.2",
     "next": "16.2.6",
     "prisma": "^7.8.0",

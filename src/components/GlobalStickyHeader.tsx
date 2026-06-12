@@ -1,36 +1,48 @@
 import React from 'react';
+import { Search, Heart, Bell, MessageCircle } from 'lucide-react';
 
 const GlobalStickyHeader = () => {
   return (
-    <header className="sticky top-0 z-50 w-full bg-white shadow-md">
+    <header className="sticky top-0 z-50 w-full bg-white shadow-sm border-b">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-        
+
         {/* Bên trái: Logo */}
-        <div className="flex items-center cursor-pointer">
-          <span className="text-2xl font-bold text-blue-600">Ghép Trọ</span>
+        <div className="flex items-center cursor-pointer hover:opacity-80 transition">
+          <span className="text-2xl font-extrabold text-blue-600 tracking-tight">Ghép Trọ</span>
         </div>
 
         {/* Ở giữa: Thanh tìm kiếm */}
-        <div className="hidden md:flex flex-1 max-w-md mx-6">
-          <div className="relative w-full">
-            <input 
-              type="text" 
-              placeholder="Tìm kiếm phòng trọ, người ở ghép..." 
-              className="w-full pl-4 pr-10 py-2 rounded-full border border-gray-300 focus:outline-none focus:border-blue-500"
+        <div className="hidden md:flex flex-1 max-w-2xl mx-8">
+          <div className="relative w-full group">
+            <input
+              type="text"
+              placeholder="Tìm kiếm phòng trọ, khu vực, người ở ghép..."
+              className="w-full pl-5 pr-12 py-2.5 bg-gray-50 rounded-full border border-gray-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
             />
-            <button className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-blue-500">
-              {/* Icon Kính lúp (Tạm thời dùng text, sau cài thư viện icon sẽ thay) */}
-              🔍
+            <button className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1.5 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition">
+              <Search size={18} />
             </button>
           </div>
         </div>
 
         {/* Phải: Icons và Nút CTA */}
-        <div className="flex items-center space-x-4">
-          <button className="text-gray-600 hover:text-blue-600">❤️</button>
-          <button className="text-gray-600 hover:text-blue-600">🔔</button>
-          <button className="text-gray-600 hover:text-blue-600">💬</button>
-          <button className="hidden sm:block px-4 py-2 bg-blue-600 text-white rounded-md font-medium hover:bg-blue-700 transition">
+        <div className="flex items-center space-x-6">
+          <div className="flex items-center space-x-4 text-gray-500">
+            <button className="hover:text-red-500 transition relative">
+              <Heart size={24} />
+            </button>
+            <button className="hover:text-blue-600 transition relative">
+              <Bell size={24} />
+              <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">2</span>
+            </button>
+            <button className="hover:text-blue-600 transition">
+              <MessageCircle size={24} />
+            </button>
+          </div>
+
+          <div className="hidden sm:block h-8 w-px bg-gray-200"></div>
+
+          <button className="hidden sm:flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 active:scale-95 transition-all shadow-sm hover:shadow">
             Đăng tin mới
           </button>
         </div>

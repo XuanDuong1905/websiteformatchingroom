@@ -6,12 +6,12 @@ const GlobalStickyHeader = () => {
     <header className="sticky top-0 z-50 w-full bg-white shadow-sm border-b">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
 
-        {/* Bên trái: Logo */}
+        {/* Left: Logo */}
         <div className="flex items-center cursor-pointer hover:opacity-80 transition">
           <span className="text-2xl font-extrabold text-blue-600 tracking-tight">Ghép Trọ</span>
         </div>
 
-        {/* Ở giữa: Thanh tìm kiếm */}
+        {/* Center: Search bar */}
         <div className="hidden md:flex flex-1 max-w-2xl mx-8">
           <div className="relative w-full group">
             <input
@@ -25,7 +25,7 @@ const GlobalStickyHeader = () => {
           </div>
         </div>
 
-        {/* Phải: Icons và Nút CTA */}
+        {/* Right: Icons and CTA */}
         <div className="flex items-center space-x-6">
           <div className="flex items-center space-x-4 text-gray-500">
             <button className="hover:text-red-500 transition relative">

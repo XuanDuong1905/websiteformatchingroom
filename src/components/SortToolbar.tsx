@@ -7,14 +7,14 @@ const SortToolbar = () => {
             <span className="text-gray-600 text-sm font-medium">Hiển thị 123 kết quả</span>
 
             <div className="flex items-center space-x-4">
-                {/* Dropdown Sắp xếp */}
+                {/* Sort dropdown */}
                 <select className="border border-gray-300 rounded-md px-3 py-1.5 text-sm text-gray-700 focus:outline-none focus:border-blue-500 cursor-pointer bg-white">
                     <option>Tin mới nhất</option>
                     <option>Giá: Thấp đến cao</option>
                     <option>Giá: Cao đến thấp</option>
                 </select>
 
-                {/* Nút chuyển đổi View List/Grid */}
+                {/* View toggle (List/Grid) */}
                 <div className="flex border border-gray-300 rounded-md overflow-hidden bg-white shadow-sm">
                     <button className="p-1.5 text-blue-600 bg-gray-50 hover:bg-gray-100 transition" title="Dạng lưới">
                         <LayoutGrid size={18} />

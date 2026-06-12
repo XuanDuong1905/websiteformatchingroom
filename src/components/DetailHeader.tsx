@@ -6,7 +6,7 @@ const DetailHeader = () => {
         <header className="sticky top-0 z-50 w-full bg-white shadow-sm border-b">
             <div className="container mx-auto px-4 h-16 flex items-center justify-between">
 
-                {/* Bên trái: Thông tin tóm tắt */}
+                {/* Left: Summary info */}
                 <div className="flex items-center space-x-3 max-w-xs md:max-w-sm">
                     <img
                         src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?q=80&w=100&auto=format&fit=crop"
@@ -19,7 +19,7 @@ const DetailHeader = () => {
                     </div>
                 </div>
 
-                {/* Ở giữa: Các tab neo (Ẩn trên mobile) */}
+                {/* Center: Anchor tabs (Hidden on mobile) */}
                 <div className="hidden lg:flex items-center space-x-6 text-sm font-medium text-gray-500">
                     <button className="text-blue-600 border-b-2 border-blue-600 py-5">Tổng quan</button>
                     <button className="hover:text-gray-800 py-5">Đặc điểm</button>
@@ -27,7 +27,7 @@ const DetailHeader = () => {
                     <button className="hover:text-gray-800 py-5">Bản đồ</button>
                 </div>
 
-                {/* Bên phải: Nút CTA */}
+                {/* Right: CTA buttons */}
                 <div className="flex items-center space-x-2 sm:space-x-3">
                     <button className="flex items-center px-3 py-1.5 sm:px-4 sm:py-2 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition text-sm">
                         <MessageCircle size={16} className="mr-1.5" />

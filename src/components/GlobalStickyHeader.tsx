@@ -1,14 +1,40 @@
+'use client';
+
 import React from 'react';
 import { Search, Heart, Bell, MessageCircle } from 'lucide-react';
 
-const GlobalStickyHeader = () => {
+interface GlobalStickyHeaderProps {
+  /** If true, the header will hide itself when user scrolls past a threshold (used on detail page) */
+  hideOnScroll?: boolean;
+  /** Scroll threshold in px before the header hides. Default: 120 */
+  scrollThreshold?: number;
+}
+
+const GlobalStickyHeader = ({ hideOnScroll = false, scrollThreshold = 120 }: GlobalStickyHeaderProps) => {
+  const [hidden, setHidden] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!hideOnScroll) return;
+
+    const handleScroll = () => {
+      setHidden(window.scrollY > scrollThreshold);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [hideOnScroll, scrollThreshold]);
+
   return (
-    <header className="sticky top-0 z-50 w-full bg-white shadow-sm border-b">
+    <header
+      className={`sticky top-0 z-50 w-full bg-white shadow-sm border-b transition-transform duration-300 ${hidden ? '-translate-y-full' : 'translate-y-0'
+        }`}
+    >
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
 
-        {/* Left: Logo */}
-        <div className="flex items-center cursor-pointer hover:opacity-80 transition">
-          <span className="text-2xl font-extrabold text-blue-600 tracking-tight">Ghép Trọ</span>
+        {/* Left: Logo + Slogan */}
+        <div className="flex flex-col cursor-pointer hover:opacity-80 transition leading-tight">
+          <span className="text-xl font-extrabold text-blue-600 tracking-tight">Ghép Trọ</span>
+          <span className="text-[10px] font-medium text-gray-400 tracking-wide hidden sm:block">Ghép Bạn · Ghép Tổ Ấm</span>
         </div>
 
         {/* Center: Search bar */}
@@ -43,7 +69,7 @@ const GlobalStickyHeader = () => {
           <div className="hidden sm:block h-8 w-px bg-gray-200"></div>
 
           <button className="hidden sm:flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 active:scale-95 transition-all shadow-sm hover:shadow">
-            Đăng tin mới
+            Đăng nhập
           </button>
         </div>
 

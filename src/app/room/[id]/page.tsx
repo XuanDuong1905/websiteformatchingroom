@@ -61,18 +61,17 @@ export default function RoomDetail() {
 
                     {/* Main content area (Left) */}
                     <div className="lg:col-span-2">
-                        {/* Placeholder for MediaGallery (static data) */}
-                        <MediaGallery images={room.images} />
-
-                        {/* Real room data passed to specifications section */}
-                        <RoomSpecs room={room} />
-                        <DescriptionMap
-                            description={room.description}
-                            address={room.address}
-                            district={room.district}
-                            ward={room.ward}
-                        />
-                        <ReviewSection />
+                        <div id="overview"><MediaGallery images={room.images} /></div>
+                        <div id="features"><RoomSpecs room={room} /></div>
+                        <div id="description">
+                            <DescriptionMap
+                                description={room.description}
+                                address={room.address}
+                                district={room.district}
+                                ward={room.ward}
+                            />
+                        </div>
+                        <div id="reviews"><ReviewSection /></div>
                     </div>
 
                     {/* Sidebar area (Right) */}

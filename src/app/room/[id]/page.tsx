@@ -1,3 +1,7 @@
+"use client";
+
+import { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
 import GlobalStickyHeader from "@/components/GlobalStickyHeader";
 import DetailHeader from "@/components/DetailHeader";
 import MediaGallery from "@/components/MediaGallery";
@@ -5,8 +9,45 @@ import RoomSpecs from "@/components/RoomSpecs";
 import DescriptionMap from "@/components/DescriptionMap";
 import ReviewSection from "@/components/ReviewSection";
 import AuthorSidebar from "@/components/AuthorSidebar";
+import axiosClient from "@/lib/axiosClient";
 
 export default function RoomDetail() {
+    const params = useParams(); // Get room ID from URL params
+    const [room, setRoom] = useState<any>(null);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchRoomDetail = async () => {
+            try {
+                setIsLoading(true);
+                // Call GET /api/rooms/:id to fetch specific room details
+                const response = await axiosClient.get(`/api/rooms/${params.id}`);
+
+                if (response.data.success) {
+                    setRoom(response.data.data);
+                }
+            } catch (error) {
+                console.error("Error fetching room details:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        if (params.id) {
+            fetchRoomDetail();
+        }
+    }, [params.id]);
+
+    // Loading state
+    if (isLoading) {
+        return <div className="min-h-screen flex items-center justify-center text-gray-500">Đang tải dữ liệu...</div>;
+    }
+
+    // Error state if room is not found
+    if (!room) {
+        return <div className="min-h-screen flex items-center justify-center text-red-500">Không tìm thấy thông tin phòng!</div>;
+    }
+
     return (
         <main className="min-h-screen bg-gray-50 pb-20">
             {/* Global header: visible initially, slides up when scrolled */}
@@ -20,15 +61,20 @@ export default function RoomDetail() {
 
                     {/* Main content area (Left) */}
                     <div className="lg:col-span-2">
+                        {/* Placeholder for MediaGallery (static data) */}
                         <MediaGallery />
-                        <RoomSpecs />
+
+                        {/* Real room data passed to specifications section */}
+                        <RoomSpecs room={room} />
+
                         <DescriptionMap />
                         <ReviewSection />
                     </div>
 
                     {/* Sidebar area (Right) */}
                     <div className="hidden lg:block relative">
-                        <AuthorSidebar riskScore={25} />
+                        {/* Real owner information and risk score passed to sidebar */}
+                        <AuthorSidebar riskScore={room.riskScore} owner={room.owner} />
                     </div>
 
                 </div>

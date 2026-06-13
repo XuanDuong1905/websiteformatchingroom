@@ -39,7 +39,7 @@ const DescriptionMap = ({ description, address, district, ward }: DescProps) => 
                 )}
             </div>
 
-            {/* Map Section (Keep static for MVP) */}
+            {/* Map Section */}
             <div>
                 <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
                     <Map className="w-5 h-5 mr-2 text-gray-500" />

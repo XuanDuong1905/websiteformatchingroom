@@ -99,13 +99,12 @@ export default function Home() {
           </div>
         )}
 
-        {/* State: Success and Display Data */}
         {!isLoading && !error && (
-          // Toggle grid vs list layouts based on isGridView state
-          <div className={`grid gap-6 ${isGridView ? 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-2 max-w-5xl mx-auto'}`}>
+          <div className={isGridView ? "grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4" : "flex flex-col gap-5 max-w-4xl mx-auto w-full"}>
             {rooms.length > 0 ? (
               rooms.map((room: any) => (
-                <RoomCard key={room.id} room={room} />
+                // Pass viewMode based on isGridView state
+                <RoomCard key={room.id} room={room} viewMode={isGridView ? 'grid' : 'list'} />
               ))
             ) : (
               <div className="col-span-full text-center py-16 bg-white rounded-xl border border-dashed border-gray-300">
@@ -120,7 +119,7 @@ export default function Home() {
             )}
           </div>
         )}
-      </div>
-    </main>
+    </div>
+    </main >
   );
 }

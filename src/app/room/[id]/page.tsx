@@ -27,7 +27,7 @@ export default function RoomDetail() {
                     setRoom(response.data.data);
                 }
             } catch (error) {
-                console.error("Error fetching room details:", error);
+                console.error("Lỗi khi tải chi tiết phòng:", error);
             } finally {
                 setIsLoading(false);
             }

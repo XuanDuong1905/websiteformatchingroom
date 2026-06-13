@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import GlobalStickyHeader from "@/components/GlobalStickyHeader";
 import FiltersBar from "@/components/FiltersBar";
 import SortToolbar from "@/components/SortToolbar";
@@ -12,6 +13,7 @@ export default function Home() {
   const [totalRooms, setTotalRooms] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const searchParams = useSearchParams();
 
   // --- FILTER AND DISPLAY STATES ---
   const [district, setDistrict] = useState("");
@@ -19,7 +21,7 @@ export default function Home() {
   const [sort, setSort] = useState("newest");
   const [isGridView, setIsGridView] = useState(true);
 
-  // Fetch data whenever district, priceRange, or sort changes
+  // Fetch data whenever district, priceRange, sort, or URL search query changes
   useEffect(() => {
     const fetchRooms = async () => {
       try {
@@ -34,13 +36,17 @@ export default function Home() {
           maxPrice = parts[1];
         }
 
-        // Fetch rooms from TV3 API with filter parameters
+        // Get search query from URL search parameters
+        const searchQuery = searchParams.get('search') || undefined;
+
+        // Fetch rooms from TV3 API with filter and search parameters
         const response = await axiosClient.get('/api/rooms', {
           params: {
             district: district || undefined,
             minPrice: minPrice || undefined,
             maxPrice: maxPrice || undefined,
             sort: sort || undefined,
+            search: searchQuery
           }
         });
 
@@ -60,7 +66,7 @@ export default function Home() {
     };
 
     fetchRooms();
-  }, [district, priceRange, sort]); // Run effect whenever filter criteria changes
+  }, [district, priceRange, sort, searchParams]); // Run effect whenever filter criteria or search query changes
 
   return (
     <main className="min-h-screen bg-gray-50">

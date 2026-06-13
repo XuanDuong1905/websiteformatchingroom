@@ -1,7 +1,8 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Search, Heart, Bell, MessageCircle, User } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 interface HeaderProps {
   hideOnScroll?: boolean;
@@ -9,6 +10,16 @@ interface HeaderProps {
 }
 
 const GlobalStickyHeader = ({ hideOnScroll, scrollThreshold }: HeaderProps) => {
+  const [keyword, setKeyword] = useState("");
+  const router = useRouter();
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (keyword.trim()) {
+      router.push(`/?search=${encodeURIComponent(keyword.trim())}`);
+    }
+  };
+
   const handleComingSoon = (e: React.MouseEvent) => {
     e.preventDefault();
     alert("Tính năng đang phát triển.");
@@ -24,19 +35,21 @@ const GlobalStickyHeader = ({ hideOnScroll, scrollThreshold }: HeaderProps) => {
 
         {/* Center: Search bar */}
         <div className="hidden md:flex flex-1 max-w-2xl mx-8">
-          <div className="relative w-full group">
+          <form onSubmit={handleSearchSubmit} className="relative w-full group">
             <input
               type="text"
+              value={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
               placeholder="Tìm kiếm phòng trọ, khu vực, người ở ghép..."
               className="w-full pl-5 pr-12 py-2.5 bg-gray-50 rounded-full border border-gray-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
             />
             <button
-              onClick={handleComingSoon}
+              type="submit"
               className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1.5 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition"
             >
               <Search size={18} />
             </button>
-          </div>
+          </form>
         </div>
 
         {/* Right: Icons and CTA */}

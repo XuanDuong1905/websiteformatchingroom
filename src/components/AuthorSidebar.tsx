@@ -1,4 +1,5 @@
-import React from 'react';
+"use client";
+import React, { useState } from 'react';
 import { Phone, MessageCircle, ShieldCheck, ShieldAlert, AlertTriangle, User, Flag } from 'lucide-react';
 
 interface AuthorSidebarProps {
@@ -11,6 +12,8 @@ interface AuthorSidebarProps {
 }
 
 const AuthorSidebar = ({ riskScore, owner }: AuthorSidebarProps) => {
+    // Manage phone visibility
+    const [showPhone, setShowPhone] = useState(false);
 
     const getRiskLevel = (score: number) => {
         if (score >= 70) return { label: "Rủi ro cao", color: "text-red-600", bg: "bg-red-50", border: "border-red-200", icon: <AlertTriangle className="w-5 h-5" /> };
@@ -19,6 +22,13 @@ const AuthorSidebar = ({ riskScore, owner }: AuthorSidebarProps) => {
     };
 
     const risk = getRiskLevel(riskScore);
+
+    // Formatter to mask phone number initially
+    const displayPhone = () => {
+        if (!owner?.phone) return "Chưa cập nhật số";
+        if (showPhone) return owner.phone;
+        return owner.phone.slice(0, 4) + " *** ***";
+    };
 
     return (
         <div className="sticky top-24 bg-white rounded-xl border border-gray-200 shadow-sm p-5">
@@ -40,11 +50,24 @@ const AuthorSidebar = ({ riskScore, owner }: AuthorSidebarProps) => {
 
             {/* Call To Actions */}
             <div className="space-y-3 mb-6">
-                <button className="w-full flex items-center justify-center px-4 py-2.5 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition">
-                    <Phone className="w-5 h-5 mr-2" />
-                    {owner?.phone || "Chưa có số điện thoại"}
+                <button
+                    onClick={() => setShowPhone(true)}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition"
+                >
+                    <Phone className="w-5 h-5 shrink-0" />
+                    <div className="flex flex-col items-center">
+                        <span className="leading-tight">{displayPhone()}</span>
+                        {!showPhone && (
+                            <span className="text-[10px] font-normal opacity-85 leading-none mt-0.5">
+                                (Bấm để hiện chi tiết)
+                            </span>
+                        )}
+                    </div>
                 </button>
-                <button className="w-full flex items-center justify-center px-4 py-2.5 border border-blue-600 text-blue-600 rounded-lg font-medium hover:bg-blue-50 transition">
+                <button
+                    onClick={() => alert("Tính năng chat đang phát triển!")}
+                    className="w-full flex items-center justify-center px-4 py-2.5 border border-blue-600 text-blue-600 rounded-lg font-medium hover:bg-blue-50 transition"
+                >
                     <MessageCircle className="w-5 h-5 mr-2" />
                     Chat ngay
                 </button>
@@ -63,7 +86,10 @@ const AuthorSidebar = ({ riskScore, owner }: AuthorSidebarProps) => {
                 </p>
             </div>
 
-            <button className="w-full flex items-center justify-center text-sm text-gray-500 hover:text-red-500 transition mt-2">
+            <button
+                onClick={() => alert("Tính năng đang phát triển!")}
+                className="w-full flex items-center justify-center text-sm text-gray-500 hover:text-red-500 transition mt-2"
+            >
                 <Flag className="w-4 h-4 mr-2" />
                 Báo cáo tin đăng
             </button>

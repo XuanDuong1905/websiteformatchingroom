@@ -62,12 +62,16 @@ export default function RoomDetail() {
                     {/* Main content area (Left) */}
                     <div className="lg:col-span-2">
                         {/* Placeholder for MediaGallery (static data) */}
-                        <MediaGallery />
+                        <MediaGallery images={room.images} />
 
                         {/* Real room data passed to specifications section */}
                         <RoomSpecs room={room} />
-
-                        <DescriptionMap />
+                        <DescriptionMap
+                            description={room.description}
+                            address={room.address}
+                            district={room.district}
+                            ward={room.ward}
+                        />
                         <ReviewSection />
                     </div>
 

@@ -14,6 +14,7 @@ interface RoomCardProps {
         ward: string;
         address: string;
         images: { imageUrl: string }[];
+        _count?: { images: number };
     };
     viewMode?: 'grid' | 'list';
 }
@@ -39,24 +40,26 @@ const RoomCard = ({ room, viewMode = 'grid' }: RoomCardProps) => {
     return (
         <Link
             href={`/room/${room.id}`}
-            // List mode: use flex-row. Grid mode: use flex-col
-            className={`bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-[0_0_20px_rgba(0,0,0,0.12)] transition-all group relative flex ${isList ? 'flex-col sm:flex-row' : 'flex-col h-full'} cursor-pointer`}
+            className={
+                isList
+                    ? "bg-white border-b border-gray-100 hover:bg-gray-50 transition-colors group relative flex flex-row items-start py-4 gap-4 cursor-pointer hover:shadow-[0_0_15px_rgba(0,0,0,0.06)] hover:z-10"
+                    : "bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-[0_0_20px_rgba(0,0,0,0.12)] transition-all group relative flex flex-col h-full cursor-pointer hover:z-10"
+            }
         >
             {/* Save/Favorite Button */}
             <button
-                className="absolute top-3 right-3 p-1.5 bg-black/30 backdrop-blur-sm rounded-full text-white hover:text-red-500 hover:bg-white transition z-10 shadow-sm"
+                className={`absolute ${isList ? 'bottom-4 right-4 text-gray-400 hover:text-red-500' : 'top-3 right-3 p-1.5 bg-black/30 backdrop-blur-sm rounded-full text-white hover:text-red-500 hover:bg-white shadow-sm'} transition z-20`}
                 onClick={(e) => {
                     e.preventDefault();
                     alert("Tính năng Lưu tin đang phát triển!");
                 }}
             >
-                <Heart size={18} />
+                <Heart size={isList ? 22 : 18} />
             </button>
 
             {/* Image Container */}
             <div
-                // List mode: Fixed width image. Grid mode: Square image (aspect-square)
-                className={`${isList ? 'w-full sm:w-2/5 md:w-1/3 h-48 sm:h-auto' : 'w-full aspect-square'} bg-gray-200 relative overflow-hidden flex-shrink-0`}
+                className={`${isList ? 'w-[160px] h-[160px] rounded-md' : 'w-full aspect-square'} bg-gray-200 relative overflow-hidden flex-shrink-0 z-0`}
             >
                 <img
                     src={coverImage}
@@ -65,19 +68,19 @@ const RoomCard = ({ room, viewMode = 'grid' }: RoomCardProps) => {
                 />
 
                 {/* Bottom right photos count */}
-                <span className="absolute bottom-3 right-3 bg-black/60 text-white text-xs px-2 py-1 rounded shadow-sm flex items-center gap-1 font-medium">
-                    <Camera size={12} />
-                    {room.images?.length || 1}
+                <span className="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded shadow-sm flex items-center gap-1 font-medium">
+                    <Camera size={10} />
+                    {room._count?.images || room.images?.length || 1}
                 </span>
             </div>
 
             {/* Room Info Section */}
-            <div className={`p-3 flex flex-col flex-grow ${isList ? 'justify-center' : ''}`}>
+            <div className={`flex flex-col flex-grow ${isList ? 'py-0.5 pr-8' : 'p-3'}`}>
                 <div className="text-[11px] font-medium text-gray-500 mb-1 uppercase tracking-wide">
                     Nội thất đầy đủ
                 </div>
                 
-                <h3 className={`font-medium text-gray-800 mb-1 leading-snug group-hover:text-cyan-600 transition-colors ${isList ? 'text-lg line-clamp-2' : 'text-sm line-clamp-2'}`}>
+                <h3 className={`font-medium text-gray-800 mb-1 leading-snug group-hover:text-cyan-600 transition-colors ${isList ? 'text-base line-clamp-2' : 'text-sm line-clamp-2'}`}>
                     {room.title}
                 </h3>
 
@@ -86,7 +89,7 @@ const RoomCard = ({ room, viewMode = 'grid' }: RoomCardProps) => {
                     <span className="text-[13px] font-medium text-cyan-700 mb-[2px]">{room.area} m²</span>
                 </div>
 
-                <div className="mt-auto flex items-start text-[12px] text-gray-500 pt-2 border-t border-gray-100">
+                <div className={`flex items-start text-[12px] text-gray-500 ${isList ? 'mt-1' : 'mt-auto pt-2 border-t border-gray-100'}`}>
                     <MapPin size={14} className="mr-1 mt-0.5 flex-shrink-0 text-gray-400" />
                     <span className="line-clamp-1">{room.address || room.ward || room.district}</span>
                 </div>

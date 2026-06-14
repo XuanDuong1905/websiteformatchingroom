@@ -32,7 +32,7 @@ const DescriptionMap = ({ description, address, district, ward }: DescProps) => 
                 {isLongText && (
                     <button
                         onClick={() => setIsExpanded(!isExpanded)}
-                        className="text-blue-600 font-medium mt-3 hover:underline text-sm transition"
+                        className="text-cyan-600 font-medium mt-3 hover:underline text-sm transition"
                     >
                         {isExpanded ? "Thu gọn" : "Xem thêm"}
                     </button>
@@ -50,9 +50,18 @@ const DescriptionMap = ({ description, address, district, ward }: DescProps) => 
                     {address}, {ward}, {district}
                 </div>
 
-                <div className="w-full h-64 bg-gray-100 rounded-lg flex flex-col items-center justify-center border border-gray-300">
-                    <Map className="w-8 h-8 text-gray-400 mb-2" />
-                    <span className="text-gray-500 text-sm font-medium">[ Khu vực Bản Đồ ]</span>
+                <div className="w-full h-72 bg-gray-100 rounded-lg overflow-hidden border border-gray-300 relative group">
+                    <iframe
+                        width="100%"
+                        height="100%"
+                        frameBorder="0"
+                        style={{ border: 0 }}
+                        referrerPolicy="no-referrer-when-downgrade"
+                        src={`https://maps.google.com/maps?q=${encodeURIComponent(`${address}, ${ward}, ${district}, Việt Nam`)}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
+                        allowFullScreen
+                        title="Bản đồ vị trí phòng trọ"
+                        className="absolute inset-0"
+                    ></iframe>
                 </div>
             </div>
 

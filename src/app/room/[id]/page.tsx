@@ -54,9 +54,9 @@ export default function RoomDetail() {
             <GlobalStickyHeader hideOnScroll scrollThreshold={120} />
 
             {/* Detail header: hidden initially, slides down when scrolled */}
-            <DetailHeader scrollThreshold={120} />
+            <DetailHeader scrollThreshold={120} room={room} />
 
-            <div className="container mx-auto px-4 py-6">
+            <div className="container mx-auto px-4 md:px-16 lg:px-40 py-6">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
                     {/* Main content area (Left) */}

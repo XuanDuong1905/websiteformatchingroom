@@ -66,7 +66,7 @@ const AuthorSidebar = ({ riskScore, owner }: AuthorSidebarProps) => {
                 </button>
                 <button
                     onClick={() => alert("Tính năng chat đang phát triển!")}
-                    className="w-full flex items-center justify-center px-4 py-2.5 border border-blue-600 text-blue-600 rounded-lg font-medium hover:bg-blue-50 transition"
+                    className="w-full flex items-center justify-center px-4 py-2.5 bg-gray-100 text-gray-800 rounded-lg font-medium hover:bg-gray-200 transition"
                 >
                     <MessageCircle className="w-5 h-5 mr-2" />
                     Chat ngay

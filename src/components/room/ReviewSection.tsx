@@ -5,14 +5,28 @@ import { Star, User, Send } from 'lucide-react';
 
 const ReviewSection = () => {
     const [newComment, setNewComment] = useState("");
-    // Manage review list (initialized with one sample review)
+    // Manage review list (initialized with sample reviews)
     const [comments, setComments] = useState([
         {
             id: 1,
+            name: "Nguyễn Văn A",
+            time: "1 giờ trước",
+            text: "Phòng có chỗ để xe máy an toàn không bạn? Mình đi làm về muộn nên cần chỗ để xe có camera.",
+            stars: 4
+        },
+        {
+            id: 2,
+            name: "Lê Minh C",
+            time: "Hôm qua",
+            text: "Mình đã qua xem phòng, y như hình nhé mọi người. Chú chủ nhà dễ tính, phòng sạch sẽ thoáng mát. Xung quanh cũng yên tĩnh.",
+            stars: 5
+        },
+        {
+            id: 3,
             name: "Trần Thị B",
             time: "2 ngày trước",
-            text: "Phòng y chang hình, chú chủ nhà rất nhiệt tình và rõ ràng tiền bạc. Hôm qua mình đến xem thấy ưng ý nên đã cọc luôn rồi mọi người nhé.",
-            stars: 5
+            text: "Phòng đẹp nhưng giá hơi cao so với ngân sách của mình. Cho hỏi có fix thêm nếu hợp đồng 1 năm không ạ?",
+            stars: 4
         }
     ]);
 
@@ -38,15 +52,15 @@ const ReviewSection = () => {
 
     return (
         <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-6">Đánh giá & Thảo luận</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-6">Bình luận</h2>
 
             <div className="space-y-6">
 
                 {/* Render review list */}
                 {comments.map((comment) => (
                     <div key={comment.id} className="flex space-x-4 border-b border-gray-100 pb-6">
-                        <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                            <User className="w-5 h-5 text-blue-600" />
+                        <div className="w-10 h-10 bg-cyan-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <User className="w-5 h-5 text-cyan-600" />
                         </div>
                         <div>
                             <div className="flex items-center justify-between mb-1">
@@ -78,13 +92,13 @@ const ReviewSection = () => {
                                     handleSendComment();
                                 }
                             }}
-                            className="w-full border border-gray-300 rounded-lg p-3 pr-12 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none transition"
+                            className="w-full border border-gray-300 rounded-lg p-3 pr-12 text-sm focus:outline-none focus:border-cyan-600 focus:ring-1 focus:ring-cyan-600 resize-none transition"
                             rows={3}
                             placeholder="Viết đánh giá hoặc đặt câu hỏi về phòng trọ này... (Nhấn Enter để gửi)"
                         ></textarea>
                         <button
                             onClick={handleSendComment}
-                            className="absolute right-3 bottom-3 p-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+                            className="absolute right-3 bottom-3 p-1.5 bg-cyan-600 text-white rounded-md hover:bg-cyan-700 transition"
                         >
                             <Send className="w-4 h-4" />
                         </button>

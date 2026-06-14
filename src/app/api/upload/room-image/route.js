@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import cloudinary from "@/lib/cloudinary";
+import { calculateRoomRiskScore } from "@/lib/riskScore";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
@@ -56,6 +57,11 @@ export async function POST(request) {
         id: parsedRoomId,
         status: { not: "deleted" },
       },
+      include: {
+        owner: {
+          select: { reputationScore: true }
+        }
+      }
     });
 
     if (!room) {
@@ -103,8 +109,21 @@ export async function POST(request) {
         data: { isCover: false },
       });
     }
+    // update riskScore base on imageCount
+    const updatedRiskScore = calculateRoomRiskScore({
+      price: room.price,
+      deposit: room.deposit,
+      description: room.description,
+      address: room.address,
+      imageCount: imageCount + 1,
+      ownerReputation: room.owner.reputationScore
+    });
 
-    // === LƯU VÀO DATABASE ===
+    await prisma.room.update({
+      where: { id: parsedRoomId },
+      data: { riskScore: updatedRiskScore }
+    });
+
     const image = await prisma.roomImage.create({
       data: {
         roomId: parsedRoomId,
@@ -115,7 +134,6 @@ export async function POST(request) {
       },
     });
 
-    // === TRẢ RESPONSE ===
     return NextResponse.json(
       {
         success: true,

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { calculateRoomRiskScore } from "@/lib/riskScore";
 
 function parseRoomId(rawId) {
   const id = Number(rawId);
@@ -104,6 +105,14 @@ export async function PATCH(request, { params }) {
           not: "deleted",
         },
       },
+      include: {
+        owner: {
+          select: { reputationScore: true }
+        },
+        _count: {
+          select: { images: true }
+        }
+      }
     });
 
     if (!existingRoom) {
@@ -140,6 +149,16 @@ export async function PATCH(request, { params }) {
     if (body.availableFrom !== undefined) {
       data.availableFrom = body.availableFrom ? new Date(body.availableFrom) : null;
     }
+
+    const mergedData = {
+      price: data.price !== undefined ? data.price : existingRoom.price,
+      deposit: data.deposit !== undefined ? data.deposit : existingRoom.deposit,
+      description: data.description !== undefined ? data.description : existingRoom.description,
+      address: data.address !== undefined ? data.address : existingRoom.address,
+      imageCount: existingRoom._count.images,
+      ownerReputation: existingRoom.owner.reputationScore
+    };
+    data.riskScore = calculateRoomRiskScore(mergedData);
 
     const updatedRoom = await prisma.room.update({
       where: {

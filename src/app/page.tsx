@@ -69,7 +69,7 @@ export default function Home() {
   }, [district, priceRange, sort, searchParams]); // Run effect whenever filter criteria or search query changes
 
   return (
-    <main className="min-h-screen bg-gray-50">
+    <main className="bg-gray-50 pb-8">
       <GlobalStickyHeader />
 
       {/* Pass states and setters to FiltersBar */}
@@ -89,11 +89,11 @@ export default function Home() {
         setIsGridView={setIsGridView}
       />
 
-      <div className="container mx-auto px-4 py-6">
+      <div className="container mx-auto px-4 md:px-16 lg:px-40 pt-2 pb-8">
         {/* State: Loading */}
         {isLoading && (
           <div className="text-center py-10 text-gray-500 flex flex-col items-center">
-            <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+            <div className="w-8 h-8 border-4 border-cyan-600 border-t-transparent rounded-full animate-spin mb-4"></div>
             Đang tìm kiếm phòng...
           </div>
         )}
@@ -117,7 +117,7 @@ export default function Home() {
                 <p className="text-gray-500 text-lg">Không tìm thấy phòng nào phù hợp với bộ lọc.</p>
                 <button
                   onClick={() => { setDistrict(""); setPriceRange(""); }}
-                  className="mt-4 px-4 py-2 text-blue-600 font-medium hover:bg-blue-50 rounded-lg transition"
+                  className="mt-4 px-4 py-2 text-cyan-600 font-medium hover:bg-cyan-50 rounded-lg transition"
                 >
                   Xóa bộ lọc
                 </button>

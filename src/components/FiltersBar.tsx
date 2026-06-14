@@ -82,7 +82,7 @@ const FiltersBar = ({ district, setDistrict, priceRange, setPriceRange }: Filter
 
     return (
         <div className="bg-white border-b py-3 shadow-sm sticky top-16 z-40">
-            <div className="container mx-auto px-4  md:px-42 flex flex-wrap items-center gap-3" ref={popoverRef}>
+            <div className="container mx-auto px-4 md:px-16 lg:px-40 flex flex-wrap items-center gap-3" ref={popoverRef}>
 
                 {/* Location Popover */}
                 <div className="relative">
@@ -94,7 +94,7 @@ const FiltersBar = ({ district, setDistrict, priceRange, setPriceRange }: Filter
                         <ChevronDown size={16} className={`transition-transform duration-200 ${activePopover === 'location' ? 'rotate-180' : ''}`} />
                     </button>
                     {activePopover === 'location' && (
-                        <div className="absolute top-full left-0 mt-2 w-72 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50">
+                        <div className="absolute top-full left-0 mt-2 w-72 bg-white rounded-2xl shadow-[0_0_15px_rgba(0,0,0,0.1)] border border-gray-200 overflow-hidden z-50">
                             <div className="p-4 border-b border-gray-100 flex items-center justify-between">
                                 <h3 className="font-semibold text-gray-800">Khu vực</h3>
                                 <button onClick={() => setActivePopover(null)} className="text-gray-400 hover:text-gray-600">
@@ -155,7 +155,7 @@ const FiltersBar = ({ district, setDistrict, priceRange, setPriceRange }: Filter
                         <ChevronDown size={16} className={`transition-transform duration-200 ${activePopover === 'price' ? 'rotate-180' : ''}`} />
                     </button>
                     {activePopover === 'price' && (
-                        <div className="absolute top-full left-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50">
+                        <div className="absolute top-full left-0 mt-2 w-80 bg-white rounded-2xl shadow-[0_0_15px_rgba(0,0,0,0.1)] border border-gray-200 overflow-hidden z-50">
                             <div className="p-4 border-b border-gray-100 flex items-center justify-between">
                                 <h3 className="font-semibold text-gray-800">Khoảng giá</h3>
                                 <button onClick={() => setActivePopover(null)} className="text-gray-400 hover:text-gray-600">

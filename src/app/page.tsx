@@ -106,7 +106,7 @@ export default function Home() {
         )}
 
         {!isLoading && !error && (
-          <div className={isGridView ? "grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4" : "flex flex-col max-w-4xl mx-auto w-full"}>
+          <div className={isGridView ? "grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5" : "flex flex-col max-w-4xl mx-auto w-full"}>
             {rooms.length > 0 ? (
               rooms.map((room: any) => (
                 // Pass viewMode based on isGridView state

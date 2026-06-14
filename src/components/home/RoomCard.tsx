@@ -46,17 +46,6 @@ const RoomCard = ({ room, viewMode = 'grid' }: RoomCardProps) => {
                     : "bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-[0_0_20px_rgba(0,0,0,0.12)] transition-all group relative flex flex-col h-full cursor-pointer hover:z-10"
             }
         >
-            {/* Save/Favorite Button */}
-            <button
-                className={`absolute ${isList ? 'bottom-4 right-4 text-gray-400 hover:text-red-500' : 'top-3 right-3 p-1.5 bg-black/30 backdrop-blur-sm rounded-full text-white hover:text-red-500 hover:bg-white shadow-sm'} transition z-20`}
-                onClick={(e) => {
-                    e.preventDefault();
-                    alert("Tính năng Lưu tin đang phát triển!");
-                }}
-            >
-                <Heart size={isList ? 22 : 18} />
-            </button>
-
             {/* Image Container */}
             <div
                 className={`${isList ? 'w-[160px] h-[160px] rounded-md' : 'w-full aspect-square'} bg-gray-200 relative overflow-hidden flex-shrink-0 z-0`}
@@ -73,6 +62,17 @@ const RoomCard = ({ room, viewMode = 'grid' }: RoomCardProps) => {
                     {room._count?.images || room.images?.length || 1}
                 </span>
             </div>
+
+            {/* Save/Favorite Button */}
+            <button
+                className={`absolute ${isList ? 'bottom-4 right-4 text-gray-400 hover:text-red-500' : 'top-3 right-3 p-1.5 bg-white/80 backdrop-blur-sm rounded-full text-gray-500 hover:text-red-500 hover:bg-white shadow-sm'} transition z-20`}
+                onClick={(e) => {
+                    e.preventDefault();
+                    alert("Tính năng Lưu tin đang phát triển!");
+                }}
+            >
+                <Heart size={isList ? 22 : 18} />
+            </button>
 
             {/* Room Info Section */}
             <div className={`flex flex-col flex-grow ${isList ? 'py-0.5 pr-8' : 'p-3'}`}>

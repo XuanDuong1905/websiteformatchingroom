@@ -81,7 +81,7 @@ const FiltersBar = ({ district, setDistrict, priceRange, setPriceRange }: Filter
     };
 
     return (
-        <div className="bg-white border-b py-3 shadow-sm sticky top-16 z-40">
+        <div className="bg-white py-3 shadow-sm sticky top-16 z-40">
             <div className="container mx-auto px-4 md:px-16 lg:px-40 flex flex-wrap items-center gap-3" ref={popoverRef}>
 
                 {/* Location Popover */}

@@ -2,13 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import GlobalStickyHeader from "@/components/GlobalStickyHeader";
-import DetailHeader from "@/components/DetailHeader";
-import MediaGallery from "@/components/MediaGallery";
-import RoomSpecs from "@/components/RoomSpecs";
-import DescriptionMap from "@/components/DescriptionMap";
-import ReviewSection from "@/components/ReviewSection";
-import AuthorSidebar from "@/components/AuthorSidebar";
+import GlobalStickyHeader from "@/components/layout/GlobalStickyHeader";
+import DetailHeader from "@/components/room/DetailHeader";
+import MediaGallery from "@/components/room/MediaGallery";
+import RoomSpecs from "@/components/room/RoomSpecs";
+import DescriptionMap from "@/components/room/DescriptionMap";
+import ReviewSection from "@/components/room/ReviewSection";
+import AuthorSidebar from "@/components/room/AuthorSidebar";
 import axiosClient from "@/lib/axiosClient";
 
 export default function RoomDetail() {

@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import GlobalStickyHeader from "@/components/GlobalStickyHeader";
-import FiltersBar from "@/components/FiltersBar";
-import SortToolbar from "@/components/SortToolbar";
-import RoomCard from "@/components/RoomCard";
+import GlobalStickyHeader from "@/components/layout/GlobalStickyHeader";
+import FiltersBar from "@/components/home/FiltersBar";
+import SortToolbar from "@/components/home/SortToolbar";
+import RoomCard from "@/components/home/RoomCard";
 import axiosClient from "@/lib/axiosClient";
 
 export default function Home() {

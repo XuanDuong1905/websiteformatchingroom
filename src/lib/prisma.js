@@ -18,6 +18,8 @@ function createAdapter() {
     password: decodeURIComponent(url.password),
     database: url.pathname.slice(1),
     connectionLimit: 5,
+    connectTimeout: 15000,
+    acquireTimeout: 30000,
     ...(sslMode && sslMode.toUpperCase() !== "DISABLED"
       ? { ssl: { rejectUnauthorized: false } }
       : {}),

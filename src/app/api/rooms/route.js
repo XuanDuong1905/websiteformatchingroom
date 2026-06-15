@@ -160,7 +160,7 @@ export async function GET(request) {
     const orderBy = SORT_OPTIONS[sort] || SORT_OPTIONS.newest;
     const skip = (page - 1) * limit;
 
-    const [rooms, total] = await prisma.$transaction([
+    const [rooms, total] = await Promise.all([
       prisma.room.findMany({
         where,
         orderBy,
@@ -216,6 +216,8 @@ export async function GET(request) {
       },
     });
   } catch (error) {
+    console.error("GET /api/rooms failed:", error);
+
     if (error.message === "INVALID_NUMBER") {
       return NextResponse.json(
         {

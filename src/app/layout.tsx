@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import AppNav from "@/components/AppNav";
 import "./globals.css";
 import Footer from "@/components/layout/Footer";
 import ScrollToTop from "@/components/layout/ScrollToTop";
@@ -17,12 +18,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="vi">
-      <body className={inter.className}>
-        {/* Page content rendered here */}
+    <html lang="vi" className="h-full antialiased">
+      <body className={`${inter.className} flex min-h-full flex-col`}>
+        <AppNav />
         {children}
-
-        {/* Global Footer & ScrollToTop components */}
         <Footer />
         <ScrollToTop />
       </body>

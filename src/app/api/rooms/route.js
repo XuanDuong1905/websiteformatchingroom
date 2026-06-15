@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { RoomStatus, VerificationStatus } from "@prisma/client";
+import { calculateRoomRiskScore } from "@/lib/riskScore";
 
 const SORT_OPTIONS = {
   newest: { createdAt: "desc" },
@@ -273,6 +274,20 @@ export async function POST(request) {
       );
     }
 
+    const owner = await prisma.user.findUnique({
+      where: { id: Number(ownerId) },
+      select: { reputationScore: true }
+    });
+
+    const riskScore = calculateRoomRiskScore({
+      price: Number(price),
+      deposit: deposit ? Number(deposit) : 0,
+      description: description,
+      address: address,
+      imageCount: 0,
+      ownerReputation: owner ? owner.reputationScore : 5.0
+    });
+
     const room = await prisma.room.create({
       data: {
         ownerId: Number(ownerId),
@@ -294,6 +309,7 @@ export async function POST(request) {
         hasContract: Boolean(hasContract),
         minStayMonths: minStayMonths ? Number(minStayMonths) : 1,
         availableFrom: availableFrom ? new Date(availableFrom) : null,
+        riskScore: riskScore,
       },
     });
 

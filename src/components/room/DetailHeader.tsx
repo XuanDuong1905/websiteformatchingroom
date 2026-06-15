@@ -3,7 +3,17 @@
 import React from 'react';
 import { Phone, MessageCircle } from 'lucide-react';
 
-const DetailHeader = ({ scrollThreshold = 120, room }: any) => {
+interface DetailHeaderProps {
+  scrollThreshold?: number;
+  room: {
+    title: string;
+    price: number;
+    images?: { imageUrl: string }[];
+    owner?: { phone?: string | null };
+  };
+}
+
+const DetailHeader = ({ scrollThreshold = 120, room }: DetailHeaderProps) => {
   const [visible, setVisible] = React.useState(false);
   const [showPhone, setShowPhone] = React.useState(false);
 

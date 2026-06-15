@@ -23,21 +23,17 @@ const FiltersBar = ({ district, setDistrict, priceRange, setPriceRange }: Filter
     // Local state for Location search
     const [locSearch, setLocSearch] = useState("");
 
-    // Sync local state when popover opens
-    useEffect(() => {
+    const togglePricePopover = () => {
         if (activePopover === 'price') {
-            if (priceRange) {
-                const parts = priceRange.split('-');
-                if (parts.length === 2) {
-                    setLocalMin(parts[0] !== '0' ? parts[0] : "");
-                    setLocalMax(parts[1] !== '99999999' ? parts[1] : "");
-                }
-            } else {
-                setLocalMin("");
-                setLocalMax("");
-            }
+            setActivePopover(null);
+            return;
         }
-    }, [activePopover, priceRange]);
+
+        const [min = '0', max = '99999999'] = priceRange.split('-');
+        setLocalMin(min !== '0' ? min : "");
+        setLocalMax(max !== '99999999' ? max : "");
+        setActivePopover('price');
+    };
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -148,7 +144,7 @@ const FiltersBar = ({ district, setDistrict, priceRange, setPriceRange }: Filter
                 {/* Price Popover */}
                 <div className="relative">
                     <button
-                        onClick={() => setActivePopover(activePopover === 'price' ? null : 'price')}
+                        onClick={togglePricePopover}
                         className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-full border transition-all ${activePopover === 'price' || priceRange ? 'border-cyan-600 text-cyan-600 bg-cyan-50' : 'border-gray-300 text-gray-700 hover:bg-gray-50'}`}
                     >
                         {getPriceLabel()}

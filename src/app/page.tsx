@@ -1,15 +1,15 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import GlobalStickyHeader from "@/components/layout/GlobalStickyHeader";
 import FiltersBar from "@/components/home/FiltersBar";
 import SortToolbar from "@/components/home/SortToolbar";
-import RoomCard from "@/components/home/RoomCard";
+import RoomCard, { type RoomSummary } from "@/components/home/RoomCard";
 import axiosClient from "@/lib/axiosClient";
 
-export default function Home() {
-  const [rooms, setRooms] = useState([]);
+function HomeContent() {
+  const [rooms, setRooms] = useState<RoomSummary[]>([]);
   const [totalRooms, setTotalRooms] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
@@ -108,7 +108,7 @@ export default function Home() {
         {!isLoading && !error && (
           <div className={isGridView ? "grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5" : "flex flex-col max-w-4xl mx-auto w-full"}>
             {rooms.length > 0 ? (
-              rooms.map((room: any) => (
+              rooms.map((room) => (
                 // Pass viewMode based on isGridView state
                 <RoomCard key={room.id} room={room} viewMode={isGridView ? 'grid' : 'list'} />
               ))
@@ -127,5 +127,13 @@ export default function Home() {
         )}
     </div>
     </main >
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-50" />}>
+      <HomeContent />
+    </Suspense>
   );
 }

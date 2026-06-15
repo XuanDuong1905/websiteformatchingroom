@@ -1,10 +1,9 @@
 import React from 'react';
-import { MapPin, Heart, Star, Camera } from 'lucide-react';
+import { MapPin, Heart, Camera } from 'lucide-react';
 import Link from 'next/link';
 
 // Define the shape of the data based on TV3's API documentation
-interface RoomCardProps {
-    room: {
+export interface RoomSummary {
         id: number;
         title: string;
         price: number;
@@ -15,7 +14,10 @@ interface RoomCardProps {
         address: string;
         images: { imageUrl: string }[];
         _count?: { images: number };
-    };
+}
+
+interface RoomCardProps {
+    room: RoomSummary;
     viewMode?: 'grid' | 'list';
 }
 

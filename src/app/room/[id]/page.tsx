@@ -11,9 +11,32 @@ import ReviewSection from "@/components/room/ReviewSection";
 import AuthorSidebar from "@/components/room/AuthorSidebar";
 import axiosClient from "@/lib/axiosClient";
 
+interface RoomDetailData {
+    title: string;
+    price: number;
+    area: number | string;
+    deposit?: number | null;
+    maxPeople: number;
+    address: string;
+    district: string;
+    ward: string;
+    description: string;
+    electricityFee?: number | null;
+    waterFee?: number | null;
+    hasContract?: boolean;
+    minStayMonths?: number | null;
+    riskScore: number;
+    images: { imageUrl: string }[];
+    owner: {
+        fullName: string;
+        phone: string;
+        avatarUrl: string;
+    };
+}
+
 export default function RoomDetail() {
     const params = useParams(); // Get room ID from URL params
-    const [room, setRoom] = useState<any>(null);
+    const [room, setRoom] = useState<RoomDetailData | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {

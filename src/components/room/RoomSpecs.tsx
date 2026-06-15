@@ -1,7 +1,22 @@
 import React from 'react';
-import { MapPin, BedDouble, Bath, Clock, Dog, Zap, Droplets } from 'lucide-react';
+import { MapPin, BedDouble, Clock, Zap, Droplets } from 'lucide-react';
 
-const RoomSpecs = ({ room }: { room: any }) => {
+interface RoomSpecsData {
+    title: string;
+    address: string;
+    ward: string;
+    district: string;
+    price: number;
+    area: number | string;
+    deposit?: number | null;
+    maxPeople: number;
+    electricityFee?: number | null;
+    waterFee?: number | null;
+    hasContract?: boolean;
+    minStayMonths?: number | null;
+}
+
+const RoomSpecs = ({ room }: { room: RoomSpecsData }) => {
     if (!room) return null;
 
     const formattedPrice = new Intl.NumberFormat('vi-VN').format(room.price);

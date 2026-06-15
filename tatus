@@ -1,0 +1,44 @@
+[33mcommit c0726ee4cb10a991b2ca2441e82dbc1cfafff9f1[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfeature/frontend-room-test[m[33m)[m
+Author: acliagaum <24120363@student.hcmus.edu.vn>
+Date:   Fri Jun 12 19:37:42 2026 +0700
+
+    add listing page and room detail page with full UI components
+
+[33mcommit a5f0de2faf32ca6043495ae5ce5edbbe70d9ad3b[m
+Author: acliagaum <24120363@student.hcmus.edu.vn>
+Date:   Fri Jun 12 19:27:35 2026 +0700
+
+    feat: add listing page and room detail page with full UI components
+
+[33mcommit ca613d3f41417d230369e67fd325b882295067a1[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m, [m[1;32mfeature/frontend-room[m[33m)[m
+Merge: d3a4a3a c011fcd
+Author: QT06-Hcmus <24120463@student.hcmus.edu.vn>
+Date:   Tue Jun 2 22:29:29 2026 +0700
+
+    Merge pull request #1 from XuanDuong1905/feature/roommate-database
+    
+    Add roommate database schema
+
+[33mcommit c011fcd61d7afb94b52a6a303199607449e69bb3[m[33m ([m[1;31morigin/feature/roommate-database[m[33m)[m
+Author: QT06-Hcmus <24120463@student.hcmus.edu.vn>
+Date:   Tue Jun 2 01:55:26 2026 +0700
+
+    Add roommate database schema
+
+[33mcommit d3a4a3af67641e23670c774b0acc1250389563ad[m
+Author: XuanDuong1905 <caoduong19052006@gmail.com>
+Date:   Mon Jun 1 15:09:07 2026 +0700
+
+    Add project setup and Git workflow guide
+
+[33mcommit 5df872ccaed00cfa03ef0361a49be7309f499afc[m
+Author: XuanDuong1905 <caoduong19052006@gmail.com>
+Date:   Mon Jun 1 15:02:43 2026 +0700
+
+    Initial setup Next.js with Prisma and MySQL
+
+[33mcommit a69ae92933e24ecdfb3af3fe7a558dd026bd8041[m
+Author: XuanDuong1905 <caoduong19052006@gmail.com>
+Date:   Mon Jun 1 14:08:24 2026 +0700
+
+    Initial commit from Create Next App

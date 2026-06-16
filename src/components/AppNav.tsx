@@ -38,16 +38,18 @@ const adminNavItems = [
 
 function getStoredRole() {
   if (typeof window === "undefined") return null;
-
   const rawUser = localStorage.getItem("user");
   if (!rawUser) return null;
-
   try {
     const user = JSON.parse(rawUser) as { role?: unknown };
     return typeof user.role === "string" ? user.role : null;
   } catch {
     return null;
   }
+}
+
+function canUseMatching() {
+  return true; // Temporary bypass for demo purposes
 }
 
 function hasStoredAuth() {
@@ -70,8 +72,8 @@ export default function AppNav() {
   const router = useRouter();
   const pathname = usePathname();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userRole, setUserRole] = useState<string | null>(null);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
 
   useEffect(() => {
     function handleStorageChange() {
@@ -95,6 +97,7 @@ export default function AppNav() {
       await logout().catch(() => null);
       clearStoredAuth();
       setIsLoggedIn(false);
+      setUserRole(null);
       window.dispatchEvent(new Event("auth-change"));
       router.push("/login");
       router.refresh();
@@ -108,10 +111,12 @@ export default function AppNav() {
       ? adminNavItems
       : userRole === "LANDLORD"
       ? landlordNavItems
-      : matchingNavItems
+      : canUseMatching()
+      ? matchingNavItems
+      : userNavItems
     : guestNavItems;
 
-  if (pathname === "/" || pathname.startsWith("/room/")) {
+  if (pathname === "/" || pathname.startsWith("/room/") || pathname.startsWith("/messages")) {
     return null;
   }
 

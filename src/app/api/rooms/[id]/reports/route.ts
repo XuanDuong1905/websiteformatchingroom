@@ -37,6 +37,7 @@ export async function POST(request: Request, { params }: Params) {
       data: report,
     });
   } catch (error) {
+    console.error("Report API Error:", error);
     return NextResponse.json(
       { success: false, message: "Lỗi gửi báo cáo" },
       { status: 500 },

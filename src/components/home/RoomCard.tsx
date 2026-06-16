@@ -1,6 +1,7 @@
 import React from 'react';
-import { MapPin, Heart, Camera } from 'lucide-react';
+import { MapPin, Camera } from 'lucide-react';
 import Link from 'next/link';
+import FavoriteRoomButton from '@/components/FavoriteRoomButton';
 
 // Define the shape of the data based on TV3's API documentation
 export interface RoomSummary {
@@ -66,15 +67,11 @@ const RoomCard = ({ room, viewMode = 'grid' }: RoomCardProps) => {
             </div>
 
             {/* Save/Favorite Button */}
-            <button
-                className={`absolute ${isList ? 'bottom-4 right-4 text-gray-400 hover:text-red-500' : 'top-3 right-3 p-1.5 bg-white/80 backdrop-blur-sm rounded-full text-gray-500 hover:text-red-500 hover:bg-white shadow-sm'} transition z-20`}
-                onClick={(e) => {
-                    e.preventDefault();
-                    alert("Tính năng Lưu tin đang phát triển!");
-                }}
+            <div
+                className={`absolute ${isList ? 'bottom-4 right-4' : 'top-3 right-3 p-1.5 bg-white/80 backdrop-blur-sm rounded-full shadow-sm'} z-20`}
             >
-                <Heart size={isList ? 22 : 18} />
-            </button>
+                <FavoriteRoomButton roomId={room.id} variant="icon" />
+            </div>
 
             {/* Room Info Section */}
             <div className={`flex flex-col flex-grow ${isList ? 'py-0.5 pr-8' : 'p-3'}`}>

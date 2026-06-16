@@ -9,6 +9,7 @@ import RoomSpecs from "@/components/room/RoomSpecs";
 import DescriptionMap from "@/components/room/DescriptionMap";
 import ReviewSection from "@/components/room/ReviewSection";
 import AuthorSidebar from "@/components/room/AuthorSidebar";
+import FavoriteRoomButton from "@/components/FavoriteRoomButton";
 import axiosClient from "@/lib/axiosClient";
 
 interface RoomDetailData {
@@ -29,6 +30,7 @@ interface RoomDetailData {
     riskScore: number;
     images: { imageUrl: string }[];
     owner: {
+        id: number;
         fullName: string;
         phone: string;
         avatarUrl: string;
@@ -86,6 +88,9 @@ export default function RoomDetail() {
                     {/* Main content area (Left) */}
                     <div className="lg:col-span-2">
                         <div id="overview"><MediaGallery images={room.images} /></div>
+                        <div className="flex justify-end mb-2">
+                            <FavoriteRoomButton roomId={room.id} variant="full" />
+                        </div>
                         <div id="features"><RoomSpecs room={room} /></div>
                         <div id="description">
                             <DescriptionMap

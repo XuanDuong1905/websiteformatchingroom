@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { notifyOnRoomComment } from "@/lib/notifications";
 
 type Params = {
   params: Promise<{
@@ -35,6 +36,7 @@ export async function GET(_request: Request, { params }: Params) {
       data: reviews,
     });
   } catch (error) {
+    console.error("Reviews API Error (GET):", error);
     return NextResponse.json(
       { success: false, message: "Lỗi tải đánh giá phòng" },
       { status: 500 },
@@ -74,11 +76,19 @@ export async function POST(request: Request, { params }: Params) {
       },
     });
 
+    // Tạo thông báo cho landlord và các user đã từng comment (fire-and-forget)
+    notifyOnRoomComment({
+      roomId,
+      reviewerId: Number(reviewerId),
+      reviewerName: review.reviewer?.fullName || "Người dùng",
+    }).catch(() => {/* ignore */});
+
     return NextResponse.json({
       success: true,
       data: review,
     });
   } catch (error) {
+    console.error("Reviews API Error (POST):", error);
     return NextResponse.json(
       { success: false, message: "Lỗi tạo đánh giá phòng" },
       { status: 500 },

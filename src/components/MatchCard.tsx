@@ -1,5 +1,12 @@
+"use client";
+
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import type { MatchItem } from "@/lib/api/matchApi";
+import { createConversation } from "@/lib/api/chatApi";
+import { getStoredUserId } from "@/lib/auth/storage";
 import ScoreBar, { ScoreBadge } from "@/components/ScoreBar";
+import { MessageCircle } from "lucide-react";
 
 type MatchCardProps = {
   match: MatchItem;
@@ -19,6 +26,9 @@ export default function MatchCard({ match, index = 0 }: MatchCardProps) {
   const safeMatchScore = Number.isFinite(matchScore) ? matchScore : 0;
   const displayScore = safeMatchScore <= 1 ? Math.round(safeMatchScore * 100) : Math.round(safeMatchScore);
   const safeReasons = Array.isArray(reasons) ? reasons : [];
+
+  const router = useRouter();
+  const [isStartingChat, setIsStartingChat] = useState(false);
 
   const fullName = user.fullName || "Người dùng chưa cập nhật tên";
   const initials = fullName
@@ -87,7 +97,7 @@ export default function MatchCard({ match, index = 0 }: MatchCardProps) {
 
       {/* Reasons */}
       {safeReasons.length > 0 ? (
-        <div className="mt-4 flex flex-wrap gap-2 border-t border-slate-50 pt-4">
+        <div className="mt-4 flex flex-wrap gap-2 border-t border-slate-50 pt-4 mb-4">
           {safeReasons.map((reason, i) => (
             <span
               key={`${reason}-${i}`}
@@ -98,12 +108,45 @@ export default function MatchCard({ match, index = 0 }: MatchCardProps) {
           ))}
         </div>
       ) : (
-        <div className="mt-4 border-t border-slate-50 pt-4">
+        <div className="mt-4 border-t border-slate-50 pt-4 mb-4">
           <p className="text-xs text-slate-400">
             Chưa có lý do chi tiết từ hệ thống matching.
           </p>
         </div>
       )}
+
+      {/* Chat Button */}
+      <button
+        onClick={async () => {
+          const currentUserId = getStoredUserId();
+          if (!currentUserId) {
+            alert("Bạn cần đăng nhập để nhắn tin!");
+            router.push("/login");
+            return;
+          }
+          if (currentUserId === user.id) {
+            alert("Bạn không thể chat với chính mình.");
+            return;
+          }
+
+          setIsStartingChat(true);
+          try {
+            const res = await createConversation(user.id); // no roomId
+            if (res.success && res.data?.id) {
+              router.push(`/messages/${res.data.id}`);
+            }
+          } catch {
+            alert("Không thể tạo cuộc trò chuyện");
+          } finally {
+            setIsStartingChat(false);
+          }
+        }}
+        disabled={isStartingChat}
+        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 mt-2 bg-cyan-50 text-cyan-700 rounded-xl font-medium hover:bg-cyan-100 transition disabled:opacity-50 text-sm"
+      >
+        <MessageCircle className="w-4 h-4" />
+        {isStartingChat ? "Đang kết nối..." : "Nhắn tin"}
+      </button>
     </article>
   );
 }

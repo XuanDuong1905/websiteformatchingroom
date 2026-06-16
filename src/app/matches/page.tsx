@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import MatchCard from "@/components/MatchCard";
+import MatchProfileModal from "@/components/MatchProfileModal";
 import { getMatches, type MatchItem } from "@/lib/api/matchApi";
 import { saveStoredUser } from "@/lib/auth/storage";
 
@@ -125,6 +126,7 @@ function StateCard({
 
 export default function MatchesPage() {
   const [state, setState] = useState<PageState>({ kind: "loading" });
+  const [selectedMatch, setSelectedMatch] = useState<MatchItem | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -295,13 +297,30 @@ export default function MatchesPage() {
               <div className="inline-flex items-center gap-2 rounded-full bg-cyan-50 px-4 py-2 text-xs font-medium text-cyan-700 ring-1 ring-cyan-100/60">
                 Sắp xếp theo điểm phù hợp
               </div>
+              <div className="inline-flex items-center gap-2 rounded-full bg-slate-50 px-4 py-2 text-xs font-medium text-slate-500 ring-1 ring-slate-100/60">
+                Nhấp vào thẻ để xem hồ sơ đầy đủ
+              </div>
             </div>
 
             <div className="space-y-4">
               {state.matches.map((match, index) => (
-                <MatchCard key={match.user.id} match={match} index={index} />
+                <MatchCard
+                  key={match.user.id}
+                  match={match}
+                  index={index}
+                  onClick={() => setSelectedMatch(match)}
+                />
               ))}
             </div>
+
+            {/* Modal hồ sơ chi tiết */}
+            {selectedMatch && (
+              <MatchProfileModal
+                match={selectedMatch}
+                index={state.matches.indexOf(selectedMatch)}
+                onClose={() => setSelectedMatch(null)}
+              />
+            )}
           </>
         )}
       </main>

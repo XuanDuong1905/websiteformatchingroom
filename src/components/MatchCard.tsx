@@ -11,6 +11,7 @@ import { MessageCircle } from "lucide-react";
 type MatchCardProps = {
   match: MatchItem;
   index?: number;
+  onClick?: () => void;
 };
 
 const avatarGradients = [
@@ -21,10 +22,12 @@ const avatarGradients = [
   "from-rose-400 to-pink-500",
 ];
 
-export default function MatchCard({ match, index = 0 }: MatchCardProps) {
+export default function MatchCard({ match, index = 0, onClick }: MatchCardProps) {
   const { user, matchScore, scores, reasons } = match;
   const safeMatchScore = Number.isFinite(matchScore) ? matchScore : 0;
-  const displayScore = safeMatchScore <= 1 ? Math.round(safeMatchScore * 100) : Math.round(safeMatchScore);
+  // matchScore từ API luôn là số nguyên 0-100 (calculateMatch đã nhân 100 rồi)
+  // Không cần đoán format, round trực tiếp để tránh edge case score=1 hiển thị thành 100%
+  const displayScore = Math.round(safeMatchScore);
   const safeReasons = Array.isArray(reasons) ? reasons : [];
 
   const router = useRouter();
@@ -47,7 +50,14 @@ export default function MatchCard({ match, index = 0 }: MatchCardProps) {
         : user.gender || "Chưa cập nhật";
 
   return (
-    <article className="group rounded-3xl bg-white p-5 shadow-[0_4px_24px_rgba(15,23,42,0.05)] ring-1 ring-slate-100/80 transition-all duration-300 hover:shadow-[0_12px_40px_rgba(15,23,42,0.08)] hover:ring-slate-200/80 sm:p-6">
+    <article
+      className="group rounded-3xl bg-white p-5 shadow-[0_4px_24px_rgba(15,23,42,0.05)] ring-1 ring-slate-100/80 transition-all duration-300 hover:shadow-[0_12px_40px_rgba(15,23,42,0.08)] hover:ring-slate-200/80 sm:p-6 cursor-pointer select-none"
+      onClick={onClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onClick?.(); }}
+      aria-label={`Xem hồ sơ ${fullName}`}
+    >
       {/* Header row */}
       <div className="flex items-start justify-between gap-4">
         {/* Left side – avatar + info */}

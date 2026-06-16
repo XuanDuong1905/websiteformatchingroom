@@ -1,12 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import React from "react";
 import type { MatchItem } from "@/lib/api/matchApi";
-import { createConversation } from "@/lib/api/chatApi";
-import { getStoredUserId } from "@/lib/auth/storage";
 import ScoreBar, { ScoreBadge } from "@/components/ScoreBar";
-import { MessageCircle } from "lucide-react";
 
 type MatchCardProps = {
   match: MatchItem;
@@ -29,9 +25,6 @@ export default function MatchCard({ match, index = 0, onClick }: MatchCardProps)
   // Không cần đoán format, round trực tiếp để tránh edge case score=1 hiển thị thành 100%
   const displayScore = Math.round(safeMatchScore);
   const safeReasons = Array.isArray(reasons) ? reasons : [];
-
-  const router = useRouter();
-  const [isStartingChat, setIsStartingChat] = useState(false);
 
   const fullName = user.fullName || "Người dùng chưa cập nhật tên";
   const initials = fullName
@@ -124,39 +117,6 @@ export default function MatchCard({ match, index = 0, onClick }: MatchCardProps)
           </p>
         </div>
       )}
-
-      {/* Chat Button */}
-      <button
-        onClick={async () => {
-          const currentUserId = getStoredUserId();
-          if (!currentUserId) {
-            alert("Bạn cần đăng nhập để nhắn tin!");
-            router.push("/login");
-            return;
-          }
-          if (currentUserId === user.id) {
-            alert("Bạn không thể chat với chính mình.");
-            return;
-          }
-
-          setIsStartingChat(true);
-          try {
-            const res = await createConversation(user.id); // no roomId
-            if (res.success && res.data?.id) {
-              router.push(`/messages/${res.data.id}`);
-            }
-          } catch {
-            alert("Không thể tạo cuộc trò chuyện");
-          } finally {
-            setIsStartingChat(false);
-          }
-        }}
-        disabled={isStartingChat}
-        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 mt-2 bg-cyan-50 text-cyan-700 rounded-xl font-medium hover:bg-cyan-100 transition disabled:opacity-50 text-sm"
-      >
-        <MessageCircle className="w-4 h-4" />
-        {isStartingChat ? "Đang kết nối..." : "Nhắn tin"}
-      </button>
     </article>
   );
 }

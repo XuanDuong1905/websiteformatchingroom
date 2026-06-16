@@ -120,6 +120,11 @@ npx prisma generate
 npx prisma migrate dev
 ```
 
+## 20. Tài liệu database
+
+- [Cấu trúc 12 bảng và chức năng từng cột](docs/database-schema/README.md)
+- [Database mẫu, tài khoản demo và cách chạy seed](docs/sample-data/README.md)
+
 Nếu muốn mở giao diện xem database bằng Prisma:
 
 ```bash

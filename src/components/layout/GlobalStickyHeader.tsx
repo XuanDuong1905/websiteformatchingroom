@@ -152,6 +152,7 @@ export default function GlobalStickyHeader({}: HeaderProps = {}) {
   };
 
   const displayName = currentUser?.fullName || currentUser?.email || "Tài khoản";
+  const canUseMatching = true; // Temporary bypass for demo purposes
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-cyan-100 bg-white shadow-sm">
@@ -220,21 +221,32 @@ export default function GlobalStickyHeader({}: HeaderProps = {}) {
             <>
               <button
                 type="button"
-                onClick={() => router.push("/profile")}
+                onClick={() => router.push("/profile/me")}
                 className="hidden rounded-xl px-3 py-2 text-sm font-semibold text-gray-700 transition hover:bg-cyan-50 hover:text-cyan-700 md:inline-flex"
               >
-                Hồ sơ
+                Thông tin cá nhân
               </button>
+              {canUseMatching && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => router.push("/profile")}
+                    className="hidden rounded-xl px-3 py-2 text-sm font-semibold text-gray-700 transition hover:bg-cyan-50 hover:text-cyan-700 md:inline-flex"
+                  >
+                    Hồ sơ ở ghép
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => router.push("/matches")}
+                    className="hidden rounded-xl px-3 py-2 text-sm font-semibold text-gray-700 transition hover:bg-cyan-50 hover:text-cyan-700 md:inline-flex"
+                  >
+                    Matching
+                  </button>
+                </>
+              )}
               <button
                 type="button"
-                onClick={() => router.push("/matches")}
-                className="hidden rounded-xl px-3 py-2 text-sm font-semibold text-gray-700 transition hover:bg-cyan-50 hover:text-cyan-700 md:inline-flex"
-              >
-                Matching
-              </button>
-              <button
-                type="button"
-                onClick={() => router.push("/profile")}
+                onClick={() => router.push("/profile/me")}
                 className="flex min-w-0 items-center gap-2 rounded-full border border-cyan-100 bg-cyan-50 py-1.5 pl-2 pr-3 text-sm font-semibold text-cyan-700 transition hover:border-cyan-300"
                 title={displayName}
               >

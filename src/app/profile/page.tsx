@@ -1,12 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import ProfileForm from "@/components/ProfileForm";
 import { getStoredUserId } from "@/lib/auth/storage";
 
 export default function ProfilePage() {
-  const [hasUserId] = useState(() => Boolean(getStoredUserId()));
+  const [hasUserId, setHasUserId] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setHasUserId(Boolean(getStoredUserId()));
+      setIsCheckingAuth(false);
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-sky-50/40">
@@ -37,8 +47,14 @@ export default function ProfilePage() {
           </p>
         </div>
 
+        {isCheckingAuth && (
+          <div className="rounded-3xl bg-white p-8 text-center text-sm text-slate-500 shadow-[0_8px_30px_rgba(15,23,42,0.04)] ring-1 ring-slate-100/80 sm:p-10">
+            Đang kiểm tra phiên đăng nhập...
+          </div>
+        )}
+
         {/* Not logged in */}
-        {!hasUserId && (
+        {!isCheckingAuth && !hasUserId && (
           <div className="rounded-3xl bg-white p-8 text-center shadow-[0_8px_30px_rgba(15,23,42,0.04)] ring-1 ring-slate-100/80 sm:p-10">
             <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-50 to-sky-50">
               <svg
@@ -73,7 +89,7 @@ export default function ProfilePage() {
         )}
 
         {/* Logged in — show the form */}
-        {hasUserId && <ProfileForm />}
+        {!isCheckingAuth && hasUserId && <ProfileForm />}
       </main>
     </div>
   );

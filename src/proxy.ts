@@ -1,6 +1,3 @@
-// TODO: Next.js 16 deprecated the middleware.ts convention in favor of proxy.ts.
-// Middleware still works but emits a console warning. Plan migration to proxy.ts
-// when the auth rules are stable. See: https://nextjs.org/docs/app/api-reference/config/proxy
 import { NextRequest, NextResponse } from "next/server";
 
 import { verifyToken, type JwtPayload, type JwtRole } from "@/lib/jwt";
@@ -16,6 +13,12 @@ const APPROVED_STATUS = "APPROVED";
 const AUTH_ROLES = new Set<Role>(["ADMIN", "STUDENT", "LANDLORD"]);
 
 const authRules: AuthRule[] = [
+  {
+    roles: ["ADMIN", "STUDENT", "LANDLORD"],
+    matches: (pathname) =>
+      hasPathPrefix(pathname, "/profile/me") ||
+      hasPathPrefix(pathname, "/api/profile/me"),
+  },
   {
     roles: ["ADMIN"],
     matches: (pathname) =>
@@ -43,7 +46,6 @@ const authRules: AuthRule[] = [
     matches: (pathname) =>
       hasPathPrefix(pathname, "/student") ||
       hasPathPrefix(pathname, "/profile") ||
-      hasPathPrefix(pathname, "/matches") ||
       hasPathPrefix(pathname, "/api/matches") ||
       hasPathPrefix(pathname, "/api/profiles"),
   },
@@ -118,7 +120,7 @@ function redirectToHome(request: NextRequest) {
   return NextResponse.redirect(new URL("/", request.url));
 }
 
-function unauthorizedResponse(request: NextRequest, message = "Chua dang nhap") {
+function unauthorizedResponse(request: NextRequest, message = "Chưa đăng nhập") {
   if (isApiRoute(request.nextUrl.pathname)) {
     return apiError(message, 401);
   }
@@ -126,7 +128,7 @@ function unauthorizedResponse(request: NextRequest, message = "Chua dang nhap") 
   return redirectToLogin(request);
 }
 
-function forbiddenResponse(request: NextRequest, message = "Khong co quyen truy cap") {
+function forbiddenResponse(request: NextRequest, message = "Không có quyền truy cập") {
   if (isApiRoute(request.nextUrl.pathname)) {
     return apiError(message, 403);
   }
@@ -138,7 +140,7 @@ function isApprovedPayload(payload: JwtPayload) {
   return payload.status === APPROVED_STATUS && isValidRole(payload.role);
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const method = request.method.toUpperCase();
   const authRule = findAuthRule(pathname, method);
@@ -158,7 +160,7 @@ export async function middleware(request: NextRequest) {
 
     if (!isApprovedPayload(payload)) {
       return clearAuthCookie(
-        forbiddenResponse(request, "Tai khoan chua duoc phe duyet"),
+        forbiddenResponse(request, "Tài khoản chưa được phê duyệt"),
       );
     }
 
@@ -169,7 +171,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   } catch {
     return clearAuthCookie(
-      unauthorizedResponse(request, "Phien dang nhap khong hop le"),
+      unauthorizedResponse(request, "Phiên đăng nhập không hợp lệ"),
     );
   }
 }

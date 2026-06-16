@@ -40,7 +40,8 @@ const profileSchema = z
     cleaningFrequency: z.enum(["daily", "weekly", "monthly"]),
     privacyLevel: z.enum(["low", "medium", "high"]),
     noiseLevel: z.enum(["low", "medium", "high"]),
-    guestFrequency: z.enum(["rare", "sometimes", "often"]),
+    guestFrequency: z.enum(["rarely", "sometimes", "often"]),
+    cookingFrequency: z.enum(["rarely", "sometimes", "often"]),
   })
   .refine((data) => data.budgetMax >= data.budgetMin, {
     message:
@@ -66,7 +67,8 @@ const defaultValues: ProfileFormValues = {
   cleaningFrequency: "weekly",
   privacyLevel: "medium",
   noiseLevel: "low",
-  guestFrequency: "rare",
+  guestFrequency: "rarely",
+  cookingFrequency: "sometimes",
 };
 
 // ─── Budget display helpers ──────────────────────────────────────────────────
@@ -232,6 +234,9 @@ function getProfileData(result: unknown): Partial<ProfilePayload> | null {
     guestFrequency: String(
       lifestyleProfile.guestFrequency ?? profileRecord.guestFrequency ?? "",
     ) as ProfilePayload["guestFrequency"],
+    cookingFrequency: String(
+      lifestyleProfile.cookingFrequency ?? profileRecord.cookingFrequency ?? "",
+    ) as ProfilePayload["cookingFrequency"],
     isSmoker: Boolean(lifestyleProfile.smoking ?? profileRecord.isSmoker),
     acceptSmoking: !Boolean(lifestyleProfile.smoking ?? profileRecord.isSmoker),
     hasPet: Boolean(lifestyleProfile.petFriendly ?? profileRecord.hasPet),
@@ -277,12 +282,19 @@ function normalizeProfile(
       ? nextValues.noiseLevel
       : defaultValues.noiseLevel,
     guestFrequency: isOneOf(nextValues.guestFrequency, [
-      "rare",
+      "rarely",
       "sometimes",
       "often",
     ])
       ? nextValues.guestFrequency
       : defaultValues.guestFrequency,
+    cookingFrequency: isOneOf(nextValues.cookingFrequency, [
+      "rarely",
+      "sometimes",
+      "often",
+    ])
+      ? nextValues.cookingFrequency
+      : defaultValues.cookingFrequency,
   };
 }
 
@@ -603,11 +615,22 @@ export default function ProfileForm() {
               {...register("guestFrequency")}
               className={selectClass}
             >
-              <option value="rare">Hiếm khi</option>
+              <option value="rarely">Hiếm khi</option>
               <option value="sometimes">Thỉnh thoảng</option>
               <option value="often">Thường xuyên</option>
             </select>
             <FieldError message={errors.guestFrequency?.message} />
+          </FormField>
+          <FormField label="Sở thích nấu ăn">
+            <select
+              {...register("cookingFrequency")}
+              className={selectClass}
+            >
+              <option value="rarely">Hiếm khi</option>
+              <option value="sometimes">Thỉnh thoảng</option>
+              <option value="often">Thường xuyên</option>
+            </select>
+            <FieldError message={errors.cookingFrequency?.message} />
           </FormField>
         </div>
       </ProfileSection>

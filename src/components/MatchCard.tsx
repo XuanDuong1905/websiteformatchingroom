@@ -81,6 +81,8 @@ export default function MatchCard({ match, index = 0 }: MatchCardProps) {
         <ScoreBar label="Dọn dẹp" value={scores?.cleaningScore} />
         <ScoreBar label="Riêng tư" value={scores?.privacyScore} />
         <ScoreBar label="Tiếng ồn" value={scores?.noiseScore} />
+        <ScoreBar label="Có khách" value={scores?.guestScore} />
+        <ScoreBar label="Nấu ăn" value={scores?.cookingScore} />
       </div>
 
       {/* Reasons */}

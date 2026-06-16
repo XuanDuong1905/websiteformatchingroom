@@ -14,9 +14,32 @@ const guestNavItems = [
 
 const userNavItems = [
   { href: "/", label: "Trang chủ" },
+  { href: "/profile/me", label: "Thông tin cá nhân" },
+];
+
+const matchingNavItems = [
+  ...userNavItems,
   { href: "/profile", label: "Hồ sơ ở ghép" },
   { href: "/matches", label: "Kết quả matching" },
 ];
+
+function getStoredRole() {
+  if (typeof window === "undefined") return null;
+
+  const rawUser = localStorage.getItem("user");
+  if (!rawUser) return null;
+
+  try {
+    const user = JSON.parse(rawUser) as { role?: unknown };
+    return typeof user.role === "string" ? user.role : null;
+  } catch {
+    return null;
+  }
+}
+
+function canUseMatching(role: string | null) {
+  return true; // Temporary bypass for demo purposes
+}
 
 function hasStoredAuth() {
   if (typeof window === "undefined") return false;
@@ -28,20 +51,26 @@ function hasStoredAuth() {
   );
 }
 
+function clearStoredAuth() {
+  localStorage.removeItem("token");
+  localStorage.removeItem("user");
+  localStorage.removeItem("userId");
+}
+
 export default function AppNav() {
   const router = useRouter();
   const pathname = usePathname();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   useEffect(() => {
-    // Read auth state from localStorage only after mount to avoid hydration mismatch.
-    setIsLoggedIn(hasStoredAuth());
-
     function handleStorageChange() {
       setIsLoggedIn(hasStoredAuth());
+      setUserRole(getStoredRole());
     }
 
+    handleStorageChange();
     window.addEventListener("storage", handleStorageChange);
     window.addEventListener("auth-change", handleStorageChange);
 
@@ -55,9 +84,7 @@ export default function AppNav() {
     try {
       setIsLoggingOut(true);
       await logout().catch(() => null);
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      localStorage.removeItem("userId");
+      clearStoredAuth();
       setIsLoggedIn(false);
       window.dispatchEvent(new Event("auth-change"));
       router.push("/login");
@@ -67,7 +94,11 @@ export default function AppNav() {
     }
   }
 
-  const navItems = isLoggedIn ? userNavItems : guestNavItems;
+  const navItems = isLoggedIn
+    ? canUseMatching(userRole)
+      ? matchingNavItems
+      : userNavItems
+    : guestNavItems;
 
   if (pathname === "/" || pathname.startsWith("/room/")) {
     return null;

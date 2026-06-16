@@ -170,11 +170,13 @@ model LandlordProfile {
   userId               Int       @unique
   businessName         String    @db.VarChar(150)
   businessLicenseImage String    @db.VarChar(500)
+  identityNumber       String?   @db.VarChar(50)
   verifiedAt           DateTime?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([businessName])
+  @@index([identityNumber])
   @@index([verifiedAt])
   @@map("landlord_profiles")
 }
@@ -185,6 +187,8 @@ model UserProfile {
   schoolName        String?      @db.VarChar(150)
   major             String?      @db.VarChar(150)
   birthYear         Int?
+  dateOfBirth       DateTime?    @db.Date
+  occupation        String?      @db.VarChar(150)
   currentAddress    String?      @db.VarChar(255)
   preferredDistrict String?      @db.VarChar(100)
   bio               String?      @db.Text

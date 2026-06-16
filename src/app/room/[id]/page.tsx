@@ -94,7 +94,7 @@ export default function RoomDetail() {
                                 ward={room.ward}
                             />
                         </div>
-                        <div id="reviews"><ReviewSection /></div>
+                        <div id="reviews"><ReviewSection roomId={room.id} /></div>
                     </div>
 
                     {/* Sidebar area (Right) */}

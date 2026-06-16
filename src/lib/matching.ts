@@ -18,6 +18,7 @@ export type MatchingUser = {
     smoking: boolean;
     petFriendly: boolean;
     guestFrequency: string;
+    cookingFrequency: string;
   } | null;
 };
 
@@ -35,6 +36,8 @@ export type MatchResult = {
     cleaningScore: number;
     privacyScore: number;
     noiseScore: number;
+    guestScore: number;
+    cookingScore: number;
   };
   reasons: string[];
 };
@@ -154,9 +157,11 @@ export function calculateMatch(a: MatchingUser, b: MatchingUser): MatchResult {
     bLifestyle.privacyPreference,
   );
   const noiseScore = sameValueScore(aLifestyle.noiseTolerance, bLifestyle.noiseTolerance);
+  const guestScore = sameValueScore(aLifestyle.guestFrequency, bLifestyle.guestFrequency);
+  const cookingScore = sameValueScore(aLifestyle.cookingFrequency, bLifestyle.cookingFrequency);
 
   const matchScore = Math.round(
-    (0.3 * sleepScore + 0.25 * cleaningScore + 0.25 * privacyScore + 0.2 * noiseScore) *
+    (0.25 * sleepScore + 0.20 * cleaningScore + 0.15 * privacyScore + 0.15 * noiseScore + 0.15 * guestScore + 0.10 * cookingScore) *
       100,
   );
 
@@ -174,12 +179,16 @@ export function calculateMatch(a: MatchingUser, b: MatchingUser): MatchResult {
       cleaningScore,
       privacyScore,
       noiseScore,
+      guestScore,
+      cookingScore,
     },
     reasons: buildReasons(a, b, {
       sleepScore,
       cleaningScore,
       privacyScore,
       noiseScore,
+      guestScore,
+      cookingScore,
     }),
   };
 }
@@ -195,6 +204,8 @@ function buildReasons(
   if (scores.cleaningScore === 1) reasons.push("Cùng tần suất dọn dẹp");
   if (scores.privacyScore === 1) reasons.push("Cùng quan điểm về không gian riêng tư");
   if (scores.noiseScore === 1) reasons.push("Cùng mức chấp nhận tiếng ồn");
+  if (scores.guestScore === 1) reasons.push("Hợp quan điểm về việc dẫn khách");
+  if (scores.cookingScore === 1) reasons.push("Cùng thói quen nấu ăn");
   if (!a.lifestyleProfile?.smoking && !b.lifestyleProfile?.smoking) {
     reasons.push("Không xung đột về hút thuốc");
   }

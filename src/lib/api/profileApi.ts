@@ -97,6 +97,10 @@ export async function getProfile(userId: number) {
   });
 }
 
+export async function getProfileByUserId(userId: number) {
+  return getProfile(userId);
+}
+
 export async function updateProfile(
   userId: number,
   payload: Partial<ProfilePayload>,

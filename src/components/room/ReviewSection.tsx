@@ -1,53 +1,79 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Star, User, Send } from 'lucide-react';
+import { getStoredUserId } from '@/lib/auth/storage';
 
-const ReviewSection = () => {
+type Review = {
+    id: number;
+    reviewer: { fullName: string };
+    createdAt: string;
+    comment: string;
+    rating: number;
+};
+
+const ReviewSection = ({ roomId }: { roomId: number }) => {
     const [newComment, setNewComment] = useState("");
-    // Manage review list (initialized with sample reviews)
-    const [comments, setComments] = useState([
-        {
-            id: 1,
-            name: "Nguyễn Văn A",
-            time: "1 giờ trước",
-            text: "Phòng có chỗ để xe máy an toàn không bạn? Mình đi làm về muộn nên cần chỗ để xe có camera.",
-            stars: 4
-        },
-        {
-            id: 2,
-            name: "Lê Minh C",
-            time: "Hôm qua",
-            text: "Mình đã qua xem phòng, y như hình nhé mọi người. Chú chủ nhà dễ tính, phòng sạch sẽ thoáng mát. Xung quanh cũng yên tĩnh.",
-            stars: 5
-        },
-        {
-            id: 3,
-            name: "Trần Thị B",
-            time: "2 ngày trước",
-            text: "Phòng đẹp nhưng giá hơi cao so với ngân sách của mình. Cho hỏi có fix thêm nếu hợp đồng 1 năm không ạ?",
-            stars: 4
-        }
-    ]);
+    const [comments, setComments] = useState<Review[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
-    const handleSendComment = () => {
+    useEffect(() => {
+        async function fetchReviews() {
+            try {
+                const res = await fetch(`/api/rooms/${roomId}/reviews`);
+                const json = await res.json();
+                if (json.success) {
+                    setComments(json.data);
+                }
+            } catch (error) {
+                console.error("Failed to load reviews", error);
+            } finally {
+                setIsLoading(false);
+            }
+        }
+        fetchReviews();
+    }, [roomId]);
+
+    const handleSendComment = async () => {
         if (!newComment.trim()) return;
 
-        // Create new review object
-        const newReview = {
-            id: Date.now(),
-            name: "Bạn (Chưa đăng nhập)",
-            time: "Vừa xong",
-            text: newComment,
-            stars: 5 // Default to 5 stars for mock purposes
-        };
+        const reviewerId = getStoredUserId();
+        if (!reviewerId) {
+            alert("Bạn cần đăng nhập để viết bình luận!");
+            return;
+        }
 
-        // Prepend new review and reset input textarea
-        setComments([newReview, ...comments]);
-        setNewComment("");
+        try {
+            const res = await fetch(`/api/rooms/${roomId}/reviews`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    reviewerId,
+                    rating: 5, // Default to 5 stars for now
+                    comment: newComment,
+                })
+            });
 
-        // Alert user of mockup status and future integration
-        alert("Bình luận đã hiển thị! (Luồng lưu vào Database sẽ được kích hoạt sau khi ghép API Đăng nhập của TV5)");
+            const json = await res.json();
+            if (json.success) {
+                setComments([json.data, ...comments]);
+                setNewComment("");
+                alert("Đăng bình luận thành công!");
+            } else {
+                alert(json.message || "Không thể đăng bình luận.");
+            }
+        } catch (error) {
+            console.error("Failed to post review", error);
+            alert("Đã xảy ra lỗi khi đăng bình luận.");
+        }
+    };
+
+    const formatDate = (dateStr: string) => {
+        const date = new Date(dateStr);
+        return new Intl.DateTimeFormat('vi-VN', {
+            day: '2-digit', month: '2-digit', year: 'numeric',
+            hour: '2-digit', minute: '2-digit'
+        }).format(date);
     };
 
     return (
@@ -57,22 +83,26 @@ const ReviewSection = () => {
             <div className="space-y-6">
 
                 {/* Render review list */}
-                {comments.map((comment) => (
+                {isLoading ? (
+                    <p className="text-gray-500 text-sm">Đang tải bình luận...</p>
+                ) : comments.length === 0 ? (
+                    <p className="text-gray-500 text-sm">Chưa có bình luận nào cho phòng này.</p>
+                ) : comments.map((comment) => (
                     <div key={comment.id} className="flex space-x-4 border-b border-gray-100 pb-6">
                         <div className="w-10 h-10 bg-cyan-100 rounded-full flex items-center justify-center flex-shrink-0">
                             <User className="w-5 h-5 text-cyan-600" />
                         </div>
                         <div>
                             <div className="flex items-center justify-between mb-1">
-                                <h4 className="font-semibold text-gray-900">{comment.name}</h4>
-                                <span className="text-xs text-gray-500 ml-4">{comment.time}</span>
+                                <h4 className="font-semibold text-gray-900">{comment.reviewer?.fullName || "Người dùng ẩn danh"}</h4>
+                                <span className="text-xs text-gray-500 ml-4">{formatDate(comment.createdAt)}</span>
                             </div>
                             <div className="flex items-center mb-2">
-                                {[...Array(comment.stars)].map((_, i) => (
+                                {[...Array(comment.rating || 5)].map((_, i) => (
                                     <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                                 ))}
                             </div>
-                            <p className="text-sm text-gray-700">{comment.text}</p>
+                            <p className="text-sm text-gray-700">{comment.comment}</p>
                         </div>
                     </div>
                 ))}

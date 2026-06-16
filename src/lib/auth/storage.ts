@@ -46,6 +46,37 @@ function findUser(payload: AuthStoragePayload) {
   return null;
 }
 
+function parseStoredUser(value: string | null) {
+  if (!value) return {};
+
+  try {
+    const user = JSON.parse(value);
+    return user && typeof user === "object" ? (user as StoredUser) : {};
+  } catch {
+    return {};
+  }
+}
+
+export function saveStoredUser(user: StoredUser) {
+  const storage = getBrowserStorage();
+  if (!storage || !user || typeof user !== "object") return null;
+
+  const existingUser = parseStoredUser(storage.getItem("user"));
+  const mergedUser = {
+    ...existingUser,
+    ...user,
+  };
+  const userId = toUserId(mergedUser.id ?? mergedUser.userId);
+
+  storage.setItem("user", JSON.stringify(mergedUser));
+
+  if (userId) {
+    storage.setItem("userId", String(userId));
+  }
+
+  return userId;
+}
+
 export function saveAuthResult(result: unknown) {
   const storage = getBrowserStorage();
   if (!storage || !result || typeof result !== "object") return;
@@ -57,10 +88,7 @@ export function saveAuthResult(result: unknown) {
   if (token) storage.setItem("token", token);
 
   if (user) {
-    storage.setItem("user", JSON.stringify(user));
-
-    const userId = toUserId(user.id ?? user.userId);
-    if (userId) storage.setItem("userId", String(userId));
+    saveStoredUser(user);
   }
 
   window.dispatchEvent(new Event("auth-change"));
@@ -86,4 +114,24 @@ export function getStoredUserId() {
   }
 
   return toUserId(storage.getItem("userId"));
+}
+
+export async function resolveCurrentUserId() {
+  const storedUserId = getStoredUserId();
+  if (storedUserId) return storedUserId;
+
+  if (typeof window === "undefined") return null;
+
+  const response = await fetch("/api/auth/me", {
+    credentials: "include",
+    cache: "no-store",
+  });
+
+  if (!response.ok) return null;
+
+  const data = await response.json().catch(() => null);
+  const user = findUser(data as AuthStoragePayload);
+  if (!user) return null;
+
+  return saveStoredUser(user);
 }

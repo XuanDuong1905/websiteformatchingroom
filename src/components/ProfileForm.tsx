@@ -6,6 +6,7 @@ import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
+  ApiRequestError,
   createProfile,
   getProfile,
   type ProfilePayload,
@@ -200,6 +201,11 @@ function getProfileData(result: unknown): Partial<ProfilePayload> | null {
   if (!data || typeof data !== "object") return null;
 
   const profileRecord = data as Record<string, unknown>;
+  const hasProfileData =
+    Boolean(profileRecord.profile) || Boolean(profileRecord.lifestyleProfile);
+
+  if (!hasProfileData) return null;
+
   const userProfile =
     profileRecord.profile && typeof profileRecord.profile === "object"
       ? (profileRecord.profile as Record<string, unknown>)
@@ -222,6 +228,9 @@ function getProfileData(result: unknown): Partial<ProfilePayload> | null {
     cleaningFrequency: String(
       lifestyleProfile.cleaningFrequency ?? profileRecord.cleaningFrequency ?? "",
     ) as ProfilePayload["cleaningFrequency"],
+    preferredGender: String(
+      lifestyleProfile.preferredGender ?? profileRecord.preferredGender ?? "",
+    ) as ProfilePayload["preferredGender"],
     privacyLevel: String(
       lifestyleProfile.privacyPreference ??
         userProfile.privacyLevel ??
@@ -238,7 +247,7 @@ function getProfileData(result: unknown): Partial<ProfilePayload> | null {
       lifestyleProfile.cookingFrequency ?? profileRecord.cookingFrequency ?? "",
     ) as ProfilePayload["cookingFrequency"],
     isSmoker: Boolean(lifestyleProfile.smoking ?? profileRecord.isSmoker),
-    acceptSmoking: !Boolean(lifestyleProfile.smoking ?? profileRecord.isSmoker),
+    acceptSmoking: Boolean(lifestyleProfile.acceptSmoking ?? profileRecord.acceptSmoking),
     hasPet: Boolean(lifestyleProfile.petFriendly ?? profileRecord.hasPet),
     acceptPet: Boolean(lifestyleProfile.petFriendly ?? profileRecord.acceptPet),
   };
@@ -358,11 +367,14 @@ export default function ProfileForm() {
           setMaxBudgetDisplay(formatBudgetDisplay(normalized.budgetMax));
           setHasExistingProfile(true);
           setLoadMessage("");
+        } else {
+          setHasExistingProfile(false);
+          setLoadMessage("Hoàn tất thông tin bên dưới để tạo hồ sơ ở ghép.");
         }
       } catch (err) {
         setHasExistingProfile(false);
         setLoadMessage(
-          err instanceof Error && err.message.includes("404")
+          err instanceof ApiRequestError && err.status === 404
             ? "Hoàn tất thông tin bên dưới để tạo hồ sơ ở ghép."
             : "Không thể tải hồ sơ. Vui lòng thử lại sau.",
         );

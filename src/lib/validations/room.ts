@@ -24,6 +24,20 @@ const optionalCoordinateSchema = z
     message: "Tọa độ không hợp lệ",
   });
 
+const optionalDateSchema = z
+  .union([z.string().trim(), z.literal(""), z.null(), z.undefined()])
+  .transform((value) => (value === "" || value == null ? null : value))
+  .refine((value) => value === null || /^\d{4}-\d{2}-\d{2}$/.test(value), {
+    message: "Ngày trống phải có định dạng YYYY-MM-DD",
+  });
+
+const optionalTimeSchema = z
+  .union([z.string().trim(), z.literal(""), z.null(), z.undefined()])
+  .transform((value) => (value === "" || value == null ? null : value))
+  .refine((value) => value === null || /^([01]\d|2[0-3]):[0-5]\d$/.test(value), {
+    message: "Giờ giới nghiêm phải có định dạng HH:mm",
+  });
+
 const imageUrlSchema = z
   .string()
   .trim()
@@ -32,6 +46,16 @@ const imageUrlSchema = z
 
 const statusSchema = z.enum(["ACTIVE", "INACTIVE", "RENTED"], {
   message: "Trạng thái phòng không hợp lệ",
+});
+
+const roomRulesSchema = z.object({
+  allowSmoking: z.boolean().default(false),
+  allowPet: z.boolean().default(false),
+  allowGuest: z.boolean().default(false),
+  curfewTime: optionalTimeSchema,
+  cookingAllowed: z.boolean().default(true),
+  parkingAllowed: z.boolean().default(false),
+  note: z.string().trim().max(1000, "Ghi chú nội quy không được quá 1000 ký tự").optional(),
 });
 
 // Base object schema without refinements – used by roomUpdateSchema.partial().
@@ -63,6 +87,9 @@ const roomBaseSchema = z.object({
       .number()
       .min(0, "Phí dịch vụ không được âm")
       .default(0),
+    deposit: z.coerce.number().min(0, "Tiền cọc không được âm").default(0),
+    wifiFee: z.coerce.number().min(0, "Phí wifi không được âm").default(0),
+    parkingFee: z.coerce.number().min(0, "Phí gửi xe không được âm").default(0),
     area: z.coerce.number().positive("Diện tích phải lớn hơn 0"),
     maxOccupants: z.coerce
       .number()
@@ -76,7 +103,15 @@ const roomBaseSchema = z.object({
       .default(0),
     latitude: optionalCoordinateSchema,
     longitude: optionalCoordinateSchema,
+    hasContract: z.boolean().default(false),
+    minStayMonths: z.coerce
+      .number()
+      .int("Thời hạn thuê tối thiểu phải là số nguyên")
+      .min(1, "Thời hạn thuê tối thiểu phải ít nhất là 1 tháng")
+      .default(1),
+    availableFrom: optionalDateSchema,
     status: statusSchema.default("ACTIVE"),
+    rules: roomRulesSchema.optional(),
     images: z
       .array(imageUrlSchema)
       .min(ROOM_IMAGE_LIMITS.min, `Phòng phải có ít nhất ${ROOM_IMAGE_LIMITS.min} ảnh`)

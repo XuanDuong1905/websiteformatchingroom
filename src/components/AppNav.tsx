@@ -23,6 +23,19 @@ const matchingNavItems = [
   { href: "/matches", label: "Kết quả matching" },
 ];
 
+const landlordNavItems = [
+  ...userNavItems,
+  { href: "/landlord/rooms/new", label: "Đăng phòng" },
+  { href: "/rooms", label: "Danh sách phòng" },
+];
+
+const adminNavItems = [
+  { href: "/", label: "Trang chủ" },
+  { href: "/admin", label: "Quản lý hệ thống" },
+  { href: "/admin/landlords", label: "Duyệt chủ trọ" },
+  { href: "/profile/me", label: "Thông tin cá nhân" },
+];
+
 function getStoredRole() {
   if (typeof window === "undefined") return null;
 
@@ -35,10 +48,6 @@ function getStoredRole() {
   } catch {
     return null;
   }
-}
-
-function canUseMatching(role: string | null) {
-  return true; // Temporary bypass for demo purposes
 }
 
 function hasStoredAuth() {
@@ -95,9 +104,11 @@ export default function AppNav() {
   }
 
   const navItems = isLoggedIn
-    ? canUseMatching(userRole)
-      ? matchingNavItems
-      : userNavItems
+    ? userRole === "ADMIN"
+      ? adminNavItems
+      : userRole === "LANDLORD"
+      ? landlordNavItems
+      : matchingNavItems
     : guestNavItems;
 
   if (pathname === "/" || pathname.startsWith("/room/")) {

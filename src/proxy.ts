@@ -81,7 +81,7 @@ function isValidRole(role: unknown): role is Role {
 }
 
 function canAccess(role: Role, allowedRoles: Role[]) {
-  return role === "ADMIN" || allowedRoles.includes(role);
+  return allowedRoles.includes(role);
 }
 
 function clearAuthCookie(response: NextResponse) {

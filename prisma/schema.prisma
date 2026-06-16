@@ -25,6 +25,12 @@ enum Gender {
   unknown
 }
 
+enum PreferredGender {
+  male
+  female
+  any
+}
+
 enum VerificationStatus {
   unverified
   pending
@@ -206,12 +212,14 @@ model LifestyleProfile {
   userId            Int               @unique
   budgetMin         Int?
   budgetMax         Int?
+  preferredGender   PreferredGender   @default(any)
   sleepTime         DateTime?         @db.Time(0)
   wakeTime          DateTime?         @db.Time(0)
   cleaningFrequency CleaningFrequency @default(unknown)
   noiseTolerance    NoiseLevel        @default(unknown)
   privacyPreference PrivacyLevel      @default(unknown)
   smoking           Boolean           @default(false)
+  acceptSmoking     Boolean           @default(false)
   petFriendly       Boolean           @default(false)
   guestFrequency    GuestFrequency    @default(unknown)
   cookingFrequency  GuestFrequency    @default(unknown)

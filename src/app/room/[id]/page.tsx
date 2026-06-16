@@ -12,6 +12,7 @@ import AuthorSidebar from "@/components/room/AuthorSidebar";
 import axiosClient from "@/lib/axiosClient";
 
 interface RoomDetailData {
+    id: number;
     title: string;
     price: number;
     area: number | string;
@@ -100,7 +101,7 @@ export default function RoomDetail() {
                     {/* Sidebar area (Right) */}
                     <div className="hidden lg:block relative">
                         {/* Real owner information and risk score passed to sidebar */}
-                        <AuthorSidebar riskScore={room.riskScore} owner={room.owner} />
+                        <AuthorSidebar roomId={room.id} riskScore={room.riskScore} owner={room.owner} />
                     </div>
 
                 </div>

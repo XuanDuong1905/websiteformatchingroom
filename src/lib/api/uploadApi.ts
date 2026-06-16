@@ -35,3 +35,30 @@ export async function uploadLicenseImage(file: File) {
 
   return data.url;
 }
+
+export async function uploadRoomImages(files: File[]) {
+  const formData = new FormData();
+
+  files.forEach((file) => {
+    formData.append("images", file);
+  });
+
+  const res = await fetch(`${API_BASE_URL}/api/upload/room-images`, {
+    method: "POST",
+    credentials: "include",
+    body: formData,
+  });
+  const data = await res.json().catch(() => null);
+
+  if (!res.ok) {
+    throw new Error(
+      getErrorMessage(data, `Không thể upload ảnh phòng (${res.status}).`),
+    );
+  }
+
+  if (!data || !Array.isArray(data.urls)) {
+    throw new Error("Phản hồi upload ảnh phòng không hợp lệ.");
+  }
+
+  return data.urls.filter((url: unknown): url is string => typeof url === "string");
+}

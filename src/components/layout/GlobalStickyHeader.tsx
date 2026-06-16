@@ -152,7 +152,8 @@ export default function GlobalStickyHeader({}: HeaderProps = {}) {
   };
 
   const displayName = currentUser?.fullName || currentUser?.email || "Tài khoản";
-  const canUseMatching = true; // Temporary bypass for demo purposes
+  const isAdmin = currentUser?.role === "ADMIN";
+  const canUseMatching = currentUser?.role === "STUDENT";
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-cyan-100 bg-white shadow-sm">
@@ -226,6 +227,15 @@ export default function GlobalStickyHeader({}: HeaderProps = {}) {
               >
                 Thông tin cá nhân
               </button>
+              {isAdmin && (
+                <button
+                  type="button"
+                  onClick={() => router.push("/admin")}
+                  className="hidden rounded-xl px-3 py-2 text-sm font-semibold text-gray-700 transition hover:bg-cyan-50 hover:text-cyan-700 md:inline-flex"
+                >
+                  Quản lý hệ thống
+                </button>
+              )}
               {canUseMatching && (
                 <>
                   <button

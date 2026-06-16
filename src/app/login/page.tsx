@@ -10,11 +10,30 @@ import { login } from "@/lib/api/authApi";
 import { saveAuthResult } from "@/lib/auth/storage";
 import { loginSchema, type LoginInput } from "@/lib/validations/auth";
 
-function getNextPath() {
-  if (typeof window === "undefined") return "/profile";
+function getRoleFromAuthResult(result: unknown) {
+  if (!result || typeof result !== "object") return null;
+
+  const record = result as Record<string, unknown>;
+  const data = record.data && typeof record.data === "object"
+    ? (record.data as Record<string, unknown>)
+    : null;
+  const user = data?.user && typeof data.user === "object"
+    ? (data.user as Record<string, unknown>)
+    : null;
+
+  return typeof user?.role === "string" ? user.role : null;
+}
+
+function getNextPath(role?: string | null) {
+  if (typeof window === "undefined") return role === "ADMIN" ? "/admin" : "/profile";
 
   const next = new URLSearchParams(window.location.search).get("next");
-  return next && next.startsWith("/") && !next.startsWith("//") ? next : "/profile";
+  if (next && next.startsWith("/") && !next.startsWith("//")) return next;
+
+  if (role === "ADMIN") return "/admin";
+  if (role === "LANDLORD") return "/landlord/rooms/new";
+
+  return "/profile";
 }
 
 export default function LoginPage() {
@@ -42,7 +61,7 @@ export default function LoginPage() {
       const result = await login(values);
       saveAuthResult(result);
       setSuccessMessage("Đăng nhập thành công.");
-      router.push(getNextPath());
+      router.push(getNextPath(getRoleFromAuthResult(result)));
       router.refresh();
     } catch (error) {
       setSubmitError(

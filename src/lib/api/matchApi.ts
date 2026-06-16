@@ -14,6 +14,8 @@ export type MatchItem = {
     cleaningScore?: number | null;
     privacyScore?: number | null;
     noiseScore?: number | null;
+    guestScore?: number | null;
+    cookingScore?: number | null;
   } | null;
   reasons?: string[] | null;
 };

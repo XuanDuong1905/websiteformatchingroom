@@ -24,6 +24,14 @@ function getSearchParamsObject(request: NextRequest) {
   return Object.fromEntries(request.nextUrl.searchParams.entries());
 }
 
+function toDate(value: string | null | undefined) {
+  return value ? new Date(`${value}T00:00:00.000Z`) : null;
+}
+
+function toTimeDate(value: string | null | undefined) {
+  return value ? new Date(`1970-01-01T${value}:00.000Z`) : null;
+}
+
 function buildRoomWhere(query: ReturnType<typeof roomListQuerySchema.parse>, mine: boolean) {
   const where: Record<string, unknown> = {};
 
@@ -184,7 +192,7 @@ export async function POST(request: NextRequest) {
     const input = parsed.data;
     const riskScore = calculateRoomRiskScore({
       price: input.price,
-      deposit: 0,
+      deposit: input.deposit,
       description: input.description,
       address: input.address,
       imageCount: input.images.length,
@@ -205,12 +213,18 @@ export async function POST(request: NextRequest) {
           electricPrice: input.electricPrice,
           waterPrice: input.waterPrice,
           serviceFee: input.serviceFee,
+          deposit: input.deposit,
+          wifiFee: input.wifiFee,
+          parkingFee: input.parkingFee,
           area: input.area,
           maxOccupants: input.maxOccupants,
           currentOccupants: input.currentOccupants,
           availableSlots: Math.max(input.maxOccupants - input.currentOccupants, 0),
           latitude: input.latitude,
           longitude: input.longitude,
+          hasContract: input.hasContract,
+          minStayMonths: input.minStayMonths,
+          availableFrom: toDate(input.availableFrom),
           status: input.status,
           riskScore,
           images: {
@@ -220,6 +234,19 @@ export async function POST(request: NextRequest) {
               sortOrder: index,
             })),
           },
+          rules: input.rules
+            ? {
+                create: {
+                  allowSmoking: input.rules.allowSmoking,
+                  allowPet: input.rules.allowPet,
+                  allowGuest: input.rules.allowGuest,
+                  curfewTime: toTimeDate(input.rules.curfewTime),
+                  cookingAllowed: input.rules.cookingAllowed,
+                  parkingAllowed: input.rules.parkingAllowed,
+                  note: input.rules.note,
+                },
+              }
+            : undefined,
         },
       });
 

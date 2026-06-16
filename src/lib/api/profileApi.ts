@@ -3,7 +3,7 @@ import { getStoredToken } from "@/lib/auth/storage";
 export type PreferredGender = "male" | "female" | "any";
 export type Frequency = "daily" | "weekly" | "monthly";
 export type Level = "low" | "medium" | "high";
-export type GuestFrequency = "rare" | "sometimes" | "often";
+export type GuestFrequency = "rarely" | "sometimes" | "often";
 
 export type ProfilePayload = {
   userId: number;
@@ -21,9 +21,20 @@ export type ProfilePayload = {
   privacyLevel: Level;
   noiseLevel: Level;
   guestFrequency: GuestFrequency;
+  cookingFrequency: GuestFrequency;
 };
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "";
+
+export class ApiRequestError extends Error {
+  status: number;
+
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = "ApiRequestError";
+    this.status = status;
+  }
+}
 
 function getErrorMessage(data: unknown, fallback: string) {
   if (data && typeof data === "object") {
@@ -54,6 +65,7 @@ async function request(path: string, options?: RequestInit) {
   }
 
   const res = await fetch(`${API_BASE_URL}${path}`, {
+    credentials: "include",
     ...options,
     headers,
   });
@@ -61,8 +73,9 @@ async function request(path: string, options?: RequestInit) {
   const data = await res.json().catch(() => null);
 
   if (!res.ok) {
-    throw new Error(
+    throw new ApiRequestError(
       getErrorMessage(data, `Yêu cầu thất bại (${res.status}).`),
+      res.status,
     );
   }
 

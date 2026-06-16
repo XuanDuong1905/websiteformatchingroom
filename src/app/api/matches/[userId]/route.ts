@@ -28,6 +28,7 @@ const userInclude = {
       smoking: true,
       petFriendly: true,
       guestFrequency: true,
+      cookingFrequency: true,
     },
   },
 };
@@ -82,9 +83,11 @@ export async function GET(_request: Request, { params }: Params) {
         data: {
           userId: id,
           matchedUserId: match.user.id,
-          compatibilityScore: match.matchScore,
-          lifestyleScore: match.matchScore,
-          finalScore: match.matchScore,
+          // Fix: matchScore là 0-100, nhưng cột Decimal(5,2) kỳ vọng 0.00-1.00
+          // Chia 100 để chuẩn hóa trước khi lưu vào DB
+          compatibilityScore: match.matchScore / 100,
+          lifestyleScore: match.matchScore / 100,
+          finalScore: match.matchScore / 100,
           reason: match.reasons.join("; "),
         },
       }),

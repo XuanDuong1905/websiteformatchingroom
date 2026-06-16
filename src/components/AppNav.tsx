@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { logout } from "@/lib/api/authApi";
+
 const guestNavItems = [
   { href: "/", label: "Trang chủ" },
   { href: "/login", label: "Đăng nhập" },
@@ -21,17 +23,21 @@ function hasStoredAuth() {
 
   return Boolean(
     localStorage.getItem("token") ||
-    localStorage.getItem("user") ||
-    localStorage.getItem("userId"),
+      localStorage.getItem("user") ||
+      localStorage.getItem("userId"),
   );
 }
 
 export default function AppNav() {
   const router = useRouter();
   const pathname = usePathname();
-  const [isLoggedIn, setIsLoggedIn] = useState(hasStoredAuth);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   useEffect(() => {
+    // Read auth state from localStorage only after mount to avoid hydration mismatch.
+    setIsLoggedIn(hasStoredAuth());
+
     function handleStorageChange() {
       setIsLoggedIn(hasStoredAuth());
     }
@@ -45,12 +51,20 @@ export default function AppNav() {
     };
   }, []);
 
-  function handleLogout() {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    localStorage.removeItem("userId");
-    setIsLoggedIn(false);
-    router.push("/login");
+  async function handleLogout() {
+    try {
+      setIsLoggingOut(true);
+      await logout().catch(() => null);
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      localStorage.removeItem("userId");
+      setIsLoggedIn(false);
+      window.dispatchEvent(new Event("auth-change"));
+      router.push("/login");
+      router.refresh();
+    } finally {
+      setIsLoggingOut(false);
+    }
   }
 
   const navItems = isLoggedIn ? userNavItems : guestNavItems;
@@ -83,10 +97,11 @@ export default function AppNav() {
           {isLoggedIn && (
             <button
               type="button"
-              onClick={handleLogout}
-              className="rounded-full px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-rose-50 hover:text-rose-700"
+              onClick={() => void handleLogout()}
+              disabled={isLoggingOut}
+              className="rounded-full px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-rose-50 hover:text-rose-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Đăng xuất
+              {isLoggingOut ? "Đang đăng xuất..." : "Đăng xuất"}
             </button>
           )}
         </div>

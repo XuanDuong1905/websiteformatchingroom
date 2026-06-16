@@ -7,9 +7,15 @@ datasource db {
 }
 
 enum UserRole {
-  student
-  owner
-  admin
+  STUDENT
+  LANDLORD
+  ADMIN
+}
+
+enum UserStatus {
+  APPROVED
+  PENDING
+  REJECTED
 }
 
 enum Gender {
@@ -57,13 +63,14 @@ enum GuestFrequency {
 }
 
 enum RoomStatus {
-  draft
-  pending
-  active
-  rented
-  hidden
-  warning
-  deleted
+  ACTIVE   @map("active")
+  INACTIVE @map("inactive")
+  RENTED   @map("rented")
+  DRAFT    @map("draft")
+  PENDING  @map("pending")
+  HIDDEN   @map("hidden")
+  WARNING  @map("warning")
+  DELETED  @map("deleted")
 }
 
 enum SearchRequestStatus {
@@ -111,20 +118,23 @@ enum ReportStatus {
 }
 
 model User {
-  id              Int      @id @default(autoincrement())
-  fullName        String   @db.VarChar(100)
-  email           String   @unique @db.VarChar(150)
-  passwordHash    String   @db.VarChar(255)
-  phone           String?  @db.VarChar(20)
-  avatarUrl       String?  @db.VarChar(500)
-  gender          Gender   @default(unknown)
-  role            UserRole @default(student)
-  reputationScore Decimal  @default(0.00) @db.Decimal(5, 2)
-  isActive        Boolean  @default(true)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id              Int        @id @default(autoincrement())
+  fullName        String     @db.VarChar(100)
+  email           String     @unique @db.VarChar(150)
+  password        String     @db.VarChar(255)
+  phone           String?    @db.VarChar(20)
+  avatarUrl       String?    @db.VarChar(500)
+  gender          Gender     @default(unknown)
+  role            UserRole   @default(STUDENT)
+  status          UserStatus @default(PENDING)
+  reputationScore Decimal    @default(0.00) @db.Decimal(5, 2)
+  isActive        Boolean    @default(true)
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
 
   profile          UserProfile?
+  studentProfile   StudentProfile?
+  landlordProfile  LandlordProfile?
   lifestyleProfile LifestyleProfile?
   rooms            Room[]
   searchRequests   SearchRequest[]
@@ -139,7 +149,34 @@ model User {
   matchingResults  MatchingResult[] @relation("UserMatches")
   matchedByResults MatchingResult[] @relation("MatchedUserMatches")
 
+  @@index([role])
+  @@index([status])
   @@map("users")
+}
+
+model StudentProfile {
+  id         Int    @id @default(autoincrement())
+  userId     Int    @unique
+  university String @db.VarChar(150)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([university])
+  @@map("student_profiles")
+}
+
+model LandlordProfile {
+  id                   Int       @id @default(autoincrement())
+  userId               Int       @unique
+  businessName         String    @db.VarChar(150)
+  businessLicenseImage String    @db.VarChar(500)
+  verifiedAt           DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([businessName])
+  @@index([verifiedAt])
+  @@map("landlord_profiles")
 }
 
 model UserProfile {
@@ -184,35 +221,36 @@ model LifestyleProfile {
 
 model Room {
   id                 Int                @id @default(autoincrement())
-  ownerId            Int
+  landlordId         Int                @map("ownerId")
   title              String             @db.VarChar(200)
-  description        String?            @db.Text
+  description        String             @db.Text
   address            String             @db.VarChar(255)
-  district           String             @db.VarChar(100)
   ward               String?            @db.VarChar(100)
+  district           String             @db.VarChar(100)
+  city               String             @default("TP. Ho Chi Minh") @db.VarChar(100)
   latitude           Decimal?           @db.Decimal(10, 8)
   longitude          Decimal?           @db.Decimal(11, 8)
   price              Int
+  electricPrice      Int                @default(0) @map("electricityFee")
+  waterPrice         Int                @default(0) @map("waterFee")
+  serviceFee         Int                @default(0) @map("otherFee")
+  area               Decimal            @db.Decimal(6, 2)
+  maxOccupants       Int                @default(1) @map("maxPeople")
+  currentOccupants   Int                @default(0) @map("currentPeople")
   deposit            Int                @default(0)
-  area               Decimal?           @db.Decimal(6, 2)
-  electricityFee     Int                @default(0)
-  waterFee           Int                @default(0)
   wifiFee            Int                @default(0)
   parkingFee         Int                @default(0)
-  otherFee           Int                @default(0)
-  maxPeople          Int                @default(1)
-  currentPeople      Int                @default(0)
   availableSlots     Int                @default(1)
   hasContract        Boolean            @default(false)
   minStayMonths      Int                @default(1)
   availableFrom      DateTime?          @db.Date
   verificationStatus VerificationStatus @default(unverified)
   riskScore          Int                @default(0)
-  status             RoomStatus         @default(pending)
+  status             RoomStatus         @default(ACTIVE)
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
 
-  owner         User             @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  landlord      User             @relation(fields: [landlordId], references: [id], onDelete: Cascade)
   images        RoomImage[]
   amenities     RoomAmenity[]
   rules         RoomRule?
@@ -220,7 +258,8 @@ model Room {
   reviews       Review[]
   riskReports   RiskReport[]
 
-  @@index([ownerId])
+  @@index([landlordId])
+  @@index([city])
   @@index([district])
   @@index([price])
   @@index([status])

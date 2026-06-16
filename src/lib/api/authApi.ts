@@ -3,12 +3,32 @@ export type LoginPayload = {
   password: string;
 };
 
-export type RegisterPayload = {
+export type StudentRegisterPayload = {
   fullName: string;
   email: string;
   password: string;
-  gender?: string;
+  confirmPassword: string;
+  university: string;
+};
+
+export type LandlordRegisterPayload = {
+  fullName: string;
+  email: string;
+  phone: string;
+  password: string;
+  confirmPassword: string;
+  businessName: string;
+  businessLicenseImage: string;
+};
+
+export type LegacyRegisterPayload = {
+  fullName: string;
+  email: string;
+  password: string;
+  confirmPassword?: string;
+  university?: string;
   school?: string;
+  gender?: string;
   phone?: string;
 };
 
@@ -32,10 +52,10 @@ async function request(path: string, options?: RequestInit) {
   headers.set("Content-Type", "application/json");
 
   const res = await fetch(`${API_BASE_URL}${path}`, {
+    credentials: "include",
     ...options,
     headers,
   });
-
   const data = await res.json().catch(() => null);
 
   if (!res.ok) {
@@ -54,16 +74,39 @@ export async function login(payload: LoginPayload) {
   });
 }
 
-export async function registerUser(payload: RegisterPayload) {
-  return request("/api/auth/register", {
+export async function registerStudent(payload: StudentRegisterPayload) {
+  return request("/api/auth/register/student", {
     method: "POST",
     body: JSON.stringify(payload),
   });
 }
 
-export async function getCurrentUser(token?: string) {
-  return request("/api/users/me", {
+export async function registerLandlord(payload: LandlordRegisterPayload) {
+  return request("/api/auth/register/landlord", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function logout() {
+  return request("/api/auth/logout", {
+    method: "POST",
+  });
+}
+
+export async function getCurrentUser() {
+  return request("/api/auth/me", {
     method: "GET",
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+}
+
+// Backward-compatible alias for older UI code.
+export async function registerUser(payload: LegacyRegisterPayload) {
+  return registerStudent({
+    fullName: payload.fullName,
+    email: payload.email,
+    password: payload.password,
+    confirmPassword: payload.confirmPassword ?? payload.password,
+    university: payload.university ?? payload.school ?? "",
   });
 }

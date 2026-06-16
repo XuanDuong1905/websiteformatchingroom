@@ -71,7 +71,16 @@ export default function ChatWindow({
                 <ExternalLink className="w-3 h-3 flex-shrink-0" />
               </Link>
             ) : (
-              <p className="text-xs text-gray-500">Thành viên Ghép Trọ</p>
+              <div className="flex items-center gap-2">
+                <p className="text-xs text-gray-500">Thành viên Ghép Trọ</p>
+                <span className="text-xs text-gray-300">•</span>
+                <button 
+                  onClick={() => alert("Tính năng xem hồ sơ chi tiết đang phát triển!")}
+                  className="text-xs text-cyan-600 hover:text-cyan-700 hover:underline inline-flex items-center gap-1"
+                >
+                  Xem hồ sơ <ExternalLink className="w-3 h-3 flex-shrink-0" />
+                </button>
+              </div>
             )}
           </div>
         </div>

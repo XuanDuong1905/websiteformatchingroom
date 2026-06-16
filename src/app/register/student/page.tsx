@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 
@@ -12,6 +13,7 @@ import {
 } from "@/lib/validations/auth";
 
 export default function StudentRegisterPage() {
+  const router = useRouter();
   const [submitError, setSubmitError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
@@ -39,6 +41,7 @@ export default function StudentRegisterPage() {
       await registerStudent(values);
       setSuccessMessage("Đăng ký sinh viên thành công. Bạn có thể đăng nhập ngay.");
       reset();
+      setTimeout(() => router.push("/login"), 2000);
     } catch (error) {
       setSubmitError(
         error instanceof Error ? error.message : "Không thể đăng ký tài khoản.",

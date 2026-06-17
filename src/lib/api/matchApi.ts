@@ -7,6 +7,12 @@ export type MatchItem = {
     gender?: string | null;
     school?: string | null;
     reputationScore?: number | null;
+    latitude?: number | null;
+    longitude?: number | null;
+    birthYear?: number | null;
+    currentAddress?: string | null;
+    budgetMin?: number | null;
+    budgetMax?: number | null;
   };
   matchScore: number;
   scores?: {

@@ -110,3 +110,21 @@ export async function registerUser(payload: LegacyRegisterPayload) {
     university: payload.university ?? payload.school ?? "",
   });
 }
+
+export async function sendOtp(email: string) {
+  return request("/api/auth/send-otp", {
+    method: "POST",
+    body: JSON.stringify({ email }),
+  });
+}
+
+export async function verifyOtp(email: string, otp: string) {
+  return request("/api/auth/verify-otp", {
+    method: "POST",
+    body: JSON.stringify({ email, otp }),
+  });
+}
+
+export async function register(payload: StudentRegisterPayload) {
+  return registerStudent(payload);
+}

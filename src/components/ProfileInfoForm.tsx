@@ -15,6 +15,7 @@ import {
   personalProfileSchema,
   type PersonalProfileFormInput,
 } from "@/lib/validations/personalProfile";
+import { uploadAvatar } from "@/lib/api/uploadApi";
 
 const inputClass =
   "w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100";
@@ -75,11 +76,16 @@ export default function ProfileInfoForm() {
   const [loadError, setLoadError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [submitError, setSubmitError] = useState("");
+  
+  const [avatarPreview, setAvatarPreview] = useState("");
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [avatarUploadError, setAvatarUploadError] = useState("");
 
   const {
     register,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<PersonalProfileFormInput>({
     resolver: zodResolver(personalProfileSchema),
@@ -98,6 +104,9 @@ export default function ProfileInfoForm() {
         if (!isMounted) return;
         setProfile(data);
         reset(toFormValues(data));
+        if (data.avatarUrl) {
+          setAvatarPreview(data.avatarUrl);
+        }
       } catch (error) {
         if (!isMounted) return;
         setLoadError(
@@ -127,6 +136,9 @@ export default function ProfileInfoForm() {
       const updatedProfile = await updateMyProfileInfo(values);
       setProfile(updatedProfile);
       reset(toFormValues(updatedProfile));
+      if (updatedProfile.avatarUrl) {
+        setAvatarPreview(updatedProfile.avatarUrl);
+      }
       updateStoredUser(updatedProfile);
       setSuccessMessage("Cập nhật thông tin cá nhân thành công.");
     } catch (error) {
@@ -137,6 +149,26 @@ export default function ProfileInfoForm() {
       );
     }
   }
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const localUrl = URL.createObjectURL(file);
+    setAvatarPreview(localUrl);
+    setAvatarUploadError("");
+
+    try {
+      setIsUploadingAvatar(true);
+      const uploadedUrl = await uploadAvatar(file);
+      setValue("avatarUrl", uploadedUrl, { shouldValidate: true, shouldDirty: true });
+      setAvatarPreview(uploadedUrl);
+    } catch (err) {
+      setAvatarUploadError(err instanceof Error ? err.message : "Không thể tải ảnh lên.");
+    } finally {
+      setIsUploadingAvatar(false);
+    }
+  };
 
   return (
     <main className="min-h-screen bg-slate-50 px-4 py-8">
@@ -213,10 +245,42 @@ export default function ProfileInfoForm() {
                   <input type="date" className={inputClass} {...register("dateOfBirth")} />
                   <FieldError message={errors.dateOfBirth?.message} />
                 </div>
-                <div>
-                  <label className={labelClass}>Ảnh đại diện URL</label>
-                  <input className={inputClass} {...register("avatarUrl")} />
-                  <FieldError message={errors.avatarUrl?.message} />
+                <div className="md:col-span-2 flex flex-col items-center gap-4 bg-slate-50 p-4 rounded-xl border border-slate-100">
+                  <span className={labelClass}>Ảnh đại diện</span>
+                  <div className="relative">
+                    <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-cyan-500 bg-slate-200 flex items-center justify-center shadow-md">
+                      {avatarPreview ? (
+                        /* eslint-disable-next-line @next/next/no-img-element */
+                        <img src={avatarPreview} alt="Avatar" className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-slate-400 font-bold text-2xl">
+                          {profile?.fullName ? profile.fullName.charAt(0).toUpperCase() : "?"}
+                        </span>
+                      )}
+                    </div>
+                    {isUploadingAvatar && (
+                      <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center text-white">
+                        <span className="h-6 w-6 animate-spin rounded-full border-2 border-slate-300 border-t-white" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex flex-col items-center gap-1.5">
+                    <label className="cursor-pointer bg-cyan-600 hover:bg-cyan-700 text-white text-xs font-semibold px-4 py-2.5 rounded-lg transition shadow-sm flex items-center gap-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                      Tải ảnh lên
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleAvatarChange}
+                        disabled={isUploadingAvatar}
+                      />
+                    </label>
+                    <p className="text-[11px] text-slate-400">Định dạng JPG, PNG. Tối đa 5MB.</p>
+                    {avatarUploadError && <p className="text-xs text-red-500 mt-1">{avatarUploadError}</p>}
+                    {/* Input ẩn để gắn kết giá trị avatarUrl với react-hook-form */}
+                    <input type="hidden" {...register("avatarUrl")} />
+                  </div>
                 </div>
               </div>
             </div>

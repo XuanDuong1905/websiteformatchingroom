@@ -62,3 +62,26 @@ export async function uploadRoomImages(files: File[]) {
 
   return data.urls.filter((url: unknown): url is string => typeof url === "string");
 }
+
+export async function uploadAvatar(file: File) {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const res = await fetch(`${API_BASE_URL}/api/upload/avatar`, {
+    method: "POST",
+    body: formData,
+  });
+  const data = await res.json().catch(() => null);
+
+  if (!res.ok) {
+    throw new Error(
+      getErrorMessage(data, `Không thể upload ảnh đại diện (${res.status}).`),
+    );
+  }
+
+  if (!data || typeof data.url !== "string") {
+    throw new Error("Phản hồi upload không hợp lệ.");
+  }
+
+  return data.url;
+}

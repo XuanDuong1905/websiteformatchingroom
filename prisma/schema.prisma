@@ -212,6 +212,8 @@ model UserProfile {
   occupation        String?      @db.VarChar(150)
   currentAddress    String?      @db.VarChar(255)
   preferredDistrict String?      @db.VarChar(100)
+  latitude          Float?
+  longitude         Float?
   bio               String?      @db.Text
   privacyLevel      PrivacyLevel @default(unknown)
   createdAt         DateTime     @default(now())
@@ -507,7 +509,6 @@ model Notification {
   @@index([userId, createdAt])
   @@map("notifications")
 }
-
 model FavoriteRoom {
   id        Int      @id @default(autoincrement())
   userId    Int
@@ -521,4 +522,32 @@ model FavoriteRoom {
   @@index([userId])
   @@index([roomId])
   @@map("favorite_rooms")
+}
+
+model OtpCode {
+  id        Int       @id @default(autoincrement())
+  email     String    @db.VarChar(150)
+  codeHash  String    @db.VarChar(255)
+  purpose   String    @db.VarChar(50)
+  expiresAt DateTime
+  usedAt    DateTime?
+  attempts  Int       @default(0)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([email])
+  @@index([email, purpose])
+  @@map("otp_codes")
+}
+
+model EmailVerification {
+  id         Int      @id @default(autoincrement())
+  email      String   @db.VarChar(150)
+  purpose    String   @db.VarChar(50)
+  verifiedAt DateTime
+  createdAt  DateTime @default(now())
+
+  @@unique([email, purpose])
+  @@index([email])
+  @@map("email_verifications")
 }

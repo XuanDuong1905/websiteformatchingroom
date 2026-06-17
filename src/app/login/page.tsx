@@ -1,11 +1,13 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Home, Mail, Lock } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 
+import { AuthButton, AuthInput, AuthLayout } from "@/components/auth";
 import { login } from "@/lib/api/authApi";
 import { saveAuthResult } from "@/lib/auth/storage";
 import { loginSchema, type LoginInput } from "@/lib/validations/auth";
@@ -71,85 +73,141 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 px-4 py-10">
-      <section className="mx-auto flex min-h-[calc(100vh-8rem)] w-full max-w-5xl items-center">
-        <div className="grid w-full overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm lg:grid-cols-[0.9fr_1.1fr]">
-          <div className="bg-slate-950 p-8 text-white sm:p-10">
-            <p className="text-sm font-semibold text-cyan-300">Ghép Trọ - Ghép Bạn</p>
-            <h1 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">
-              Đăng nhập
-            </h1>
-            <p className="mt-4 text-sm leading-6 text-slate-300">
-              Truy cập hồ sơ, kết quả ghép bạn, hoặc bảng duyệt chủ trọ theo vai trò của bạn.
-            </p>
+    <AuthLayout>
+      <div className="mx-auto w-full max-w-5xl">
+        <div className="overflow-hidden rounded-2xl border border-white/60 bg-white shadow-xl shadow-slate-200/50 backdrop-blur-sm lg:grid lg:min-h-[540px] lg:grid-cols-2">
+
+          {/* ── Left: Brand Panel ── */}
+          <div className="relative hidden overflow-hidden bg-gradient-to-br from-[#0891B2] via-[#0284C7] to-[#0369A1] lg:flex lg:flex-col lg:justify-center">
+            {/* Decorative circles */}
+            <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-white/10" aria-hidden="true" />
+            <div className="pointer-events-none absolute -bottom-12 -left-12 h-40 w-40 rounded-full bg-cyan-200/15" aria-hidden="true" />
+            <div className="pointer-events-none absolute bottom-20 right-8 h-20 w-20 rounded-full bg-sky-200/10" aria-hidden="true" />
+
+            <div className="relative z-10 px-10 py-14 xl:px-14">
+              {/* Brand */}
+              <div className="mb-8 flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
+                  <Home className="h-5 w-5 text-white" />
+                </div>
+                <span className="text-base font-bold text-white/90">
+                  Ghép Trọ - Ghép Bạn
+                </span>
+              </div>
+
+              {/* Heading */}
+              <h1 className="text-3xl font-bold leading-tight text-white xl:text-4xl">
+                Xin chào,<br />
+                mừng bạn trở lại!
+              </h1>
+
+              {/* Description */}
+              <p className="mt-4 max-w-xs text-[15px] leading-relaxed text-cyan-50/85">
+                Đăng nhập để tìm phòng phù hợp, ghép bạn ở cùng hoặc quản lý tin trọ của bạn.
+              </p>
+
+              {/* Highlight pills */}
+              <div className="mt-7 flex flex-wrap gap-2">
+                <span className="rounded-full bg-white/15 px-4 py-1.5 text-xs font-medium text-white/90 backdrop-blur-sm">
+                  Tìm phòng
+                </span>
+                <span className="rounded-full bg-white/15 px-4 py-1.5 text-xs font-medium text-white/90 backdrop-blur-sm">
+                  Ghép bạn
+                </span>
+                <span className="rounded-full bg-white/15 px-4 py-1.5 text-xs font-medium text-white/90 backdrop-blur-sm">
+                  Đăng tin trọ
+                </span>
+              </div>
+            </div>
           </div>
 
-          <div className="p-6 sm:p-8 lg:p-10">
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+          {/* ── Right: Login Form ── */}
+          <div className="flex flex-col justify-center px-6 py-10 sm:px-10 lg:px-12 lg:py-14">
+            <div className="mx-auto w-full max-w-md">
+
+              {/* Mobile-only branding */}
+              <div className="mb-6 flex items-center gap-2.5 lg:hidden">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-600">
+                  <Home className="h-4.5 w-4.5 text-white" />
+                </div>
+                <span className="text-base font-bold text-slate-800">
+                  Ghép Trọ - Ghép Bạn
+                </span>
+              </div>
+
+              {/* Form header */}
               <div>
-                <label className="mb-2 block text-sm font-semibold text-slate-700">
-                  Email
-                </label>
-                <input
+                <h2 className="text-2xl font-bold text-slate-900">
+                  Đăng nhập
+                </h2>
+                <p className="mt-1.5 text-sm text-slate-500">
+                  Truy cập tài khoản Ghép Trọ - Ghép Bạn của bạn
+                </p>
+              </div>
+
+              {/* Form */}
+              <form onSubmit={handleSubmit(onSubmit)} className="mt-7 space-y-5">
+                <AuthInput
+                  label="Email"
                   type="email"
                   autoComplete="email"
-                  className="w-full rounded-md border border-slate-300 bg-white px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100"
                   placeholder="email@example.com"
+                  icon={<Mail className="h-4.5 w-4.5" />}
+                  error={errors.email?.message}
                   {...register("email")}
                 />
-                {errors.email?.message && (
-                  <p className="mt-2 text-sm text-red-600">{errors.email.message}</p>
-                )}
-              </div>
 
-              <div>
-                <label className="mb-2 block text-sm font-semibold text-slate-700">
-                  Mật khẩu
-                </label>
-                <input
+                <AuthInput
+                  label="Mật khẩu"
                   type="password"
                   autoComplete="current-password"
-                  className="w-full rounded-md border border-slate-300 bg-white px-4 py-3 text-sm text-slate-950 outline-none transition focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100"
                   placeholder="Nhập mật khẩu"
+                  icon={<Lock className="h-4.5 w-4.5" />}
+                  error={errors.password?.message}
                   {...register("password")}
                 />
-                {errors.password?.message && (
-                  <p className="mt-2 text-sm text-red-600">{errors.password.message}</p>
+
+                {submitError && (
+                  <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+                    {submitError}
+                  </div>
                 )}
+
+                {successMessage && (
+                  <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+                    {successMessage}
+                  </div>
+                )}
+
+                <AuthButton type="submit" isLoading={isSubmitting}>
+                  Đăng nhập
+                </AuthButton>
+              </form>
+
+              {/* Register links */}
+              <div className="mt-6 flex flex-col gap-3 border-t border-slate-100 pt-6 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-sm text-slate-500">Chưa có tài khoản?</p>
+                <div className="flex gap-4">
+                  <Link
+                    href="/register/student"
+                    className="text-sm font-medium text-cyan-700 transition-colors hover:text-cyan-800"
+                  >
+                    Đăng ký sinh viên
+                  </Link>
+                  <Link
+                    href="/register/landlord"
+                    className="text-sm font-medium text-cyan-700 transition-colors hover:text-cyan-800"
+                  >
+                    Đăng ký chủ trọ
+                  </Link>
+                </div>
               </div>
 
-              {submitError && (
-                <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                  {submitError}
-                </div>
-              )}
-
-              {successMessage && (
-                <div className="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
-                  {successMessage}
-                </div>
-              )}
-
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full rounded-md bg-cyan-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-cyan-700 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {isSubmitting ? "Đang đăng nhập..." : "Đăng nhập"}
-              </button>
-
-              <div className="flex flex-col gap-2 text-sm text-slate-600 sm:flex-row sm:items-center sm:justify-between">
-                <Link href="/register/student" className="font-medium text-cyan-700 hover:text-cyan-800">
-                  Đăng ký sinh viên
-                </Link>
-                <Link href="/register/landlord" className="font-medium text-cyan-700 hover:text-cyan-800">
-                  Đăng ký chủ trọ
-                </Link>
-              </div>
-            </form>
+            </div>
           </div>
+
         </div>
-      </section>
-    </main>
+      </div>
+    </AuthLayout>
   );
 }

@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 
@@ -28,6 +29,7 @@ function isValidLicenseFile(file: File) {
 }
 
 export default function LandlordRegisterPage() {
+  const router = useRouter();
   const [submitError, setSubmitError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [uploadError, setUploadError] = useState("");
@@ -105,16 +107,10 @@ export default function LandlordRegisterPage() {
       setSubmitError("");
       setSuccessMessage("");
 
-      const result = await registerLandlord(values);
-      const message =
-        result && typeof result === "object" && "message" in result
-          ? String((result as { message?: unknown }).message)
-          : "Tài khoản đang chờ quản trị viên xét duyệt.";
-
-      setSuccessMessage(message);
-      setUploadedUrl("");
-      setUploadMessage("");
+      await registerLandlord(values);
+      setSuccessMessage("Đăng ký chủ trọ thành công. Bạn có thể đăng nhập ngay.");
       reset();
+      setTimeout(() => router.push("/login"), 2000);
     } catch (error) {
       setSubmitError(
         error instanceof Error ? error.message : "Không thể đăng ký tài khoản chủ trọ.",

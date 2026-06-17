@@ -6,6 +6,10 @@ export type MatchingUser = {
   profile: {
     schoolName: string | null;
     preferredDistrict: string | null;
+    currentAddress: string | null;
+    latitude: number | null;
+    longitude: number | null;
+    birthYear: number | null;
   } | null;
   lifestyleProfile: {
     budgetMin: number | null;
@@ -29,6 +33,12 @@ export type MatchResult = {
     gender: string;
     school: string | null;
     reputationScore: unknown;
+    latitude?: number | null;
+    longitude?: number | null;
+    birthYear?: number | null;
+    currentAddress?: string | null;
+    budgetMin?: number | null;
+    budgetMax?: number | null;
   };
   matchScore: number;
   scores: {
@@ -50,11 +60,13 @@ function hasBudgetOverlap(a: MatchingUser, b: MatchingUser) {
   const aLifestyle = a.lifestyleProfile;
   const bLifestyle = b.lifestyleProfile;
 
+  // Dùng null check thật sự (== null) thay vì falsy check (!value)
+  // để tránh lọc mất user có budgetMin = 0
   if (
-    !aLifestyle?.budgetMin ||
-    !aLifestyle.budgetMax ||
-    !bLifestyle?.budgetMin ||
-    !bLifestyle.budgetMax
+    aLifestyle?.budgetMin == null ||
+    aLifestyle.budgetMax == null ||
+    bLifestyle?.budgetMin == null ||
+    bLifestyle.budgetMax == null
   ) {
     return false;
   }
@@ -66,7 +78,10 @@ function isDistrictCompatible(a: MatchingUser, b: MatchingUser) {
   const aDistrict = normalize(a.profile?.preferredDistrict);
   const bDistrict = normalize(b.profile?.preferredDistrict);
 
-  return Boolean(aDistrict && bDistrict && aDistrict === bDistrict);
+  // Nếu một trong hai chưa điền preferredDistrict thì không loại
+  // Chỉ filter khi cả hai đều có district và khác nhau
+  if (!aDistrict || !bDistrict) return true;
+  return aDistrict === bDistrict;
 }
 
 function isSmokingCompatible(a: MatchingUser, b: MatchingUser) {
@@ -82,12 +97,13 @@ function isPetCompatible(a: MatchingUser, b: MatchingUser) {
 }
 
 export function passHardMatching(a: MatchingUser, b: MatchingUser) {
-  return (
-    Boolean(a.lifestyleProfile && b.lifestyleProfile && a.profile && b.profile) &&
-    hasBudgetOverlap(a, b) &&
-    isDistrictCompatible(a, b) &&
-    isSmokingCompatible(a, b) &&
-    isPetCompatible(a, b)
+  // Hard filter chỉ kiểm tra profile có tồn tại để tính điểm được.
+  // Budget và district KHÔNG dùng làm điều kiện loại cứng:
+  //   - Nhiều user chưa điền budget → hasBudgetOverlap trả false → lọc hết
+  //   - Thay vào đó, budget/district sẽ đóng góp vào reasons (soft signal)
+  // Ngưỡng matchScore > 50 sẽ lọc kết quả không phù hợp ở bước cuối.
+  return Boolean(
+    a.lifestyleProfile && b.lifestyleProfile && a.profile && b.profile
   );
 }
 
@@ -170,8 +186,14 @@ export function calculateMatch(a: MatchingUser, b: MatchingUser): MatchResult {
       id: b.id,
       fullName: b.fullName,
       gender: b.gender,
-      school: b.profile?.schoolName ?? null,
+      school: b.profile?.schoolName || null,
       reputationScore: b.reputationScore,
+      latitude: b.profile?.latitude,
+      longitude: b.profile?.longitude,
+      birthYear: b.profile?.birthYear,
+      currentAddress: b.profile?.currentAddress,
+      budgetMin: b.lifestyleProfile?.budgetMin,
+      budgetMax: b.lifestyleProfile?.budgetMax,
     },
     matchScore,
     scores: {
@@ -198,7 +220,14 @@ function buildReasons(
   b: MatchingUser,
   scores: MatchResult["scores"],
 ) {
-  const reasons = ["Ngân sách phù hợp", "Cùng khu vực mong muốn"];
+  const reasons: string[] = [];
+
+  // Chỉ thêm reason ngân sách nếu thực sự overlap
+  if (hasBudgetOverlap(a, b)) reasons.push("Ngân sách phù hợp");
+  // Chỉ thêm reason khu vực nếu cả hai đều điền và trùng nhau
+  const aDistrict = normalize(a.profile?.preferredDistrict);
+  const bDistrict = normalize(b.profile?.preferredDistrict);
+  if (aDistrict && bDistrict && aDistrict === bDistrict) reasons.push("Cùng khu vực mong muốn");
 
   if (scores.sleepScore >= 0.85) reasons.push("Giờ ngủ và giờ thức gần nhau");
   if (scores.cleaningScore === 1) reasons.push("Cùng tần suất dọn dẹp");
@@ -221,5 +250,6 @@ export function findBestMatches(currentUser: MatchingUser, candidateUsers: Match
     .filter((user) => user.id !== currentUser.id)
     .filter((user) => passHardMatching(currentUser, user))
     .map((user) => calculateMatch(currentUser, user))
-    .sort((a, b) => b.matchScore - a.matchScore);
+    .filter((result) => result.matchScore > 50) // Chỉ hiển thị khi độ phù hợp > 50%
+    .sort((a, b) => b.matchScore - a.matchScore); // Điểm cao xếp trên
 }

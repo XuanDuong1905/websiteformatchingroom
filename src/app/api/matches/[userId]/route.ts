@@ -14,6 +14,10 @@ const userInclude = {
     select: {
       schoolName: true,
       preferredDistrict: true,
+      currentAddress: true,
+      latitude: true,
+      longitude: true,
+      birthYear: true,
     },
   },
   lifestyleProfile: {
@@ -28,6 +32,7 @@ const userInclude = {
       smoking: true,
       petFriendly: true,
       guestFrequency: true,
+      cookingFrequency: true,
     },
   },
 };
@@ -82,17 +87,39 @@ export async function GET(_request: Request, { params }: Params) {
         data: {
           userId: id,
           matchedUserId: match.user.id,
-          compatibilityScore: match.matchScore,
-          lifestyleScore: match.matchScore,
-          finalScore: match.matchScore,
+          // Fix: matchScore là 0-100, nhưng cột Decimal(5,2) kỳ vọng 0.00-1.00
+          // Chia 100 để chuẩn hóa trước khi lưu vào DB
+          compatibilityScore: match.matchScore / 100,
+          lifestyleScore: match.matchScore / 100,
+          finalScore: match.matchScore / 100,
           reason: match.reasons.join("; "),
         },
       }),
     ),
   );
 
+  // Fuzz coordinates to protect privacy (offset by ~100m-300m stably based on user ID)
+  const fuzzedMatches = matches.map(match => {
+    const seed = match.user.id;
+    const fuzzOffsetLat = (Math.sin(seed * 12.9898 + 78.233) * 43758.5453 % 1) * 0.004 - 0.002;
+    const fuzzOffsetLng = (Math.cos(seed * 12.9898 + 78.233) * 43758.5453 % 1) * 0.004 - 0.002;
+    
+    return {
+      ...match,
+      user: {
+        ...match.user,
+        latitude: match.user.latitude ? match.user.latitude + fuzzOffsetLat : null,
+        longitude: match.user.longitude ? match.user.longitude + fuzzOffsetLng : null,
+      }
+    };
+  });
+
   return NextResponse.json({
     success: true,
-    data: matches,
+    data: fuzzedMatches,
+    currentUser: {
+      latitude: currentUser.profile?.latitude,
+      longitude: currentUser.profile?.longitude,
+    }
   });
 }

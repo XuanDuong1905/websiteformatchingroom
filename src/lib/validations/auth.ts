@@ -9,7 +9,16 @@ const fullNameSchema = z
 const passwordSchema = z
   .string()
   .min(8, "Mật khẩu phải có ít nhất 8 ký tự")
-  .max(72, "Mật khẩu không được quá 72 ký tự");
+  .max(72, "Mật khẩu không được quá 72 ký tự")
+  .refine((val) => /[A-Z]/.test(val), {
+    message: "Mật khẩu phải chứa ít nhất 1 chữ cái viết hoa",
+  })
+  .refine((val) => /[a-z]/.test(val), {
+    message: "Mật khẩu phải chứa ít nhất 1 chữ cái viết thường",
+  })
+  .refine((val) => /[0-9]/.test(val), {
+    message: "Mật khẩu phải chứa ít nhất 1 chữ số",
+  });
 
 const confirmPasswordSchema = z.string().min(1, "Vui lòng nhập lại mật khẩu");
 
@@ -21,8 +30,8 @@ const emailSchema = z
   .max(150, "Email không được quá 150 ký tự");
 
 const studentEmailSchema = emailSchema.refine(
-  (email) => email.endsWith(".edu.vn"),
-  "Email sinh viên phải kết thúc bằng .edu.vn",
+  (email) => email.includes(".edu"),
+  "Vui lòng sử dụng mail sinh viên",
 );
 
 const phoneSchema = z

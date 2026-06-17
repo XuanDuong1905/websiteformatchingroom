@@ -2,11 +2,14 @@
 import React, { useState } from 'react';
 import { Phone, MessageCircle, ShieldCheck, ShieldAlert, AlertTriangle, User, Flag, X } from 'lucide-react';
 import { getStoredUserId } from '@/lib/auth/storage';
+import { useRouter } from 'next/navigation';
+import { createConversation } from '@/lib/api/chatApi';
 
 interface AuthorSidebarProps {
     roomId: number;
     riskScore: number;
     owner: {
+        id: number;
         fullName: string;
         phone: string;
         avatarUrl: string;
@@ -19,6 +22,8 @@ const AuthorSidebar = ({ roomId, riskScore, owner }: AuthorSidebarProps) => {
     const [reportReason, setReportReason] = useState("fake_post");
     const [reportDescription, setReportDescription] = useState("");
     const [isReporting, setIsReporting] = useState(false);
+    const [isStartingChat, setIsStartingChat] = useState(false);
+    const router = useRouter();
 
     const getRiskLevel = (score: number) => {
         if (score >= 70) return { label: "Rủi ro cao", color: "text-red-600", bg: "bg-red-50", border: "border-red-200", icon: <AlertTriangle className="w-5 h-5" /> };
@@ -106,11 +111,35 @@ const AuthorSidebar = ({ roomId, riskScore, owner }: AuthorSidebarProps) => {
                     </div>
                 </button>
                 <button
-                    onClick={() => alert("Tính năng chat đang phát triển!")}
-                    className="w-full flex items-center justify-center px-4 py-2.5 bg-gray-100 text-gray-800 rounded-lg font-medium hover:bg-gray-200 transition"
+                    onClick={async () => {
+                        const currentUserId = getStoredUserId();
+                        if (!currentUserId) {
+                            alert("Bạn cần đăng nhập để nhắn tin!");
+                            router.push("/login");
+                            return;
+                        }
+                        if (currentUserId === owner.id) {
+                            alert("Bạn không thể chat với chính mình.");
+                            return;
+                        }
+                        
+                        setIsStartingChat(true);
+                        try {
+                            const res = await createConversation(owner.id, roomId);
+                            if (res.success && res.data?.id) {
+                                router.push(`/messages/${res.data.id}`);
+                            }
+                        } catch {
+                            alert("Không thể tạo cuộc trò chuyện");
+                        } finally {
+                            setIsStartingChat(false);
+                        }
+                    }}
+                    disabled={isStartingChat}
+                    className="w-full flex items-center justify-center px-4 py-2.5 bg-gray-100 text-gray-800 rounded-lg font-medium hover:bg-gray-200 transition disabled:opacity-50"
                 >
                     <MessageCircle className="w-5 h-5 mr-2" />
-                    Chat ngay
+                    {isStartingChat ? "Đang kết nối..." : "Chat ngay"}
                 </button>
             </div>
 

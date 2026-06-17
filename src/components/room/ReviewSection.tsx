@@ -14,6 +14,8 @@ type Review = {
 
 const ReviewSection = ({ roomId }: { roomId: number }) => {
     const [newComment, setNewComment] = useState("");
+    const [rating, setRating] = useState(5);
+    const [hoveredRating, setHoveredRating] = useState(0);
     const [comments, setComments] = useState<Review[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -49,7 +51,7 @@ const ReviewSection = ({ roomId }: { roomId: number }) => {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     reviewerId,
-                    rating: 5, // Default to 5 stars for now
+                    rating: rating,
                     comment: newComment,
                 })
             });
@@ -58,6 +60,7 @@ const ReviewSection = ({ roomId }: { roomId: number }) => {
             if (json.success) {
                 setComments([json.data, ...comments]);
                 setNewComment("");
+                setRating(5);
                 alert("Đăng bình luận thành công!");
             } else {
                 alert(json.message || "Không thể đăng bình luận.");
@@ -108,30 +111,56 @@ const ReviewSection = ({ roomId }: { roomId: number }) => {
                 ))}
 
                 {/* New review input form */}
-                <div className="flex space-x-4 pt-2">
-                    <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
-                        <User className="w-5 h-5 text-gray-400" />
+                <div className="pt-2 border-t border-gray-100">
+                    <div className="flex items-center mb-3 ml-14">
+                        <span className="text-sm text-gray-700 mr-3 font-medium">Đánh giá của bạn:</span>
+                        <div className="flex">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                                <Star
+                                    key={star}
+                                    className={`w-6 h-6 cursor-pointer transition-colors duration-150 ${
+                                        star <= (hoveredRating || rating)
+                                            ? "fill-yellow-400 text-yellow-400"
+                                            : "fill-gray-200 text-gray-200 hover:fill-yellow-200 hover:text-yellow-200"
+                                    }`}
+                                    onMouseEnter={() => setHoveredRating(star)}
+                                    onMouseLeave={() => setHoveredRating(0)}
+                                    onClick={() => setRating(star)}
+                                />
+                            ))}
+                        </div>
                     </div>
-                    <div className="flex-grow relative">
-                        <textarea
-                            value={newComment}
-                            onChange={(e) => setNewComment(e.target.value)}
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter' && !e.shiftKey) {
-                                    e.preventDefault();
-                                    handleSendComment();
-                                }
-                            }}
-                            className="w-full border border-gray-300 rounded-lg p-3 pr-12 text-sm focus:outline-none focus:border-cyan-600 focus:ring-1 focus:ring-cyan-600 resize-none transition"
-                            rows={3}
-                            placeholder="Viết đánh giá hoặc đặt câu hỏi về phòng trọ này... (Nhấn Enter để gửi)"
-                        ></textarea>
-                        <button
-                            onClick={handleSendComment}
-                            className="absolute right-3 bottom-3 p-1.5 bg-cyan-600 text-white rounded-md hover:bg-cyan-700 transition"
-                        >
-                            <Send className="w-4 h-4" />
-                        </button>
+                    
+                    <div className="flex space-x-4">
+                        <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                            <User className="w-5 h-5 text-gray-400" />
+                        </div>
+                        <div className="flex-grow relative">
+                            <textarea
+                                value={newComment}
+                                onChange={(e) => setNewComment(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' && !e.shiftKey) {
+                                        e.preventDefault();
+                                        handleSendComment();
+                                    }
+                                }}
+                                className="w-full border border-gray-300 rounded-lg p-3 pr-12 text-sm focus:outline-none focus:border-cyan-600 focus:ring-1 focus:ring-cyan-600 resize-none transition"
+                                rows={3}
+                                placeholder="Viết đánh giá hoặc đặt câu hỏi về phòng trọ này... (Nhấn Enter để gửi)"
+                            ></textarea>
+                            <button
+                                onClick={handleSendComment}
+                                disabled={!newComment.trim()}
+                                className={`absolute right-3 bottom-3 p-1.5 rounded-md transition ${
+                                    newComment.trim()
+                                        ? "bg-cyan-600 text-white hover:bg-cyan-700"
+                                        : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                                }`}
+                            >
+                                <Send className="w-4 h-4" />
+                            </button>
+                        </div>
                     </div>
                 </div>
 

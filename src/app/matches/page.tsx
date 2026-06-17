@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import MatchCard from "@/components/MatchCard";
+import MatchProfileModal from "@/components/MatchProfileModal";
 import { getMatches, type MatchItem } from "@/lib/api/matchApi";
 import { saveStoredUser } from "@/lib/auth/storage";
 
@@ -20,7 +21,7 @@ type PageState =
   | { kind: "no-profile" }
   | { kind: "error"; message: string }
   | { kind: "empty" }
-  | { kind: "results"; matches: MatchItem[] };
+  | { kind: "results"; matches: MatchItem[]; currentUserLocation: [number, number] | null };
 
 function extractUser(payload: unknown): CurrentUser | null {
   if (!payload || typeof payload !== "object") return null;
@@ -79,6 +80,15 @@ function getMatchesData(result: unknown): MatchItem[] {
   return [];
 }
 
+function getCurrentUserLocation(result: unknown): [number, number] | null {
+  if (!result || typeof result !== "object") return null;
+  const record = result as Record<string, any>;
+  if (record.currentUser?.latitude && record.currentUser?.longitude) {
+    return [record.currentUser.latitude, record.currentUser.longitude];
+  }
+  return null;
+}
+
 function sortMatches(matches: MatchItem[]) {
   return [...matches].sort((a, b) => {
     const left = Number.isFinite(a.matchScore) ? a.matchScore : 0;
@@ -123,8 +133,25 @@ function StateCard({
   );
 }
 
+import dynamic from "next/dynamic";
+import { MapIcon, List } from "lucide-react";
+
+const MatchingMap = dynamic(() => import("@/components/maps/MatchingMap"), {
+  ssr: false,
+  loading: () => (
+    <div className="h-[600px] w-full rounded-2xl bg-slate-50 flex items-center justify-center border border-slate-100">
+      <div className="flex flex-col items-center gap-2 text-slate-400">
+        <div className="w-8 h-8 border-4 border-slate-200 border-t-cyan-500 rounded-full animate-spin"></div>
+        <p className="text-sm">Đang tải bản đồ...</p>
+      </div>
+    </div>
+  ),
+});
+
 export default function MatchesPage() {
   const [state, setState] = useState<PageState>({ kind: "loading" });
+  const [selectedMatch, setSelectedMatch] = useState<MatchItem | null>(null);
+  const [activeTab, setActiveTab] = useState<"list" | "map">("list");
 
   useEffect(() => {
     let isMounted = true;
@@ -150,9 +177,10 @@ export default function MatchesPage() {
 
         const result = await getMatches(userId);
         const matches = sortMatches(getMatchesData(result));
+        const currentUserLocation = getCurrentUserLocation(result);
 
         if (!isMounted) return;
-        setState(matches.length > 0 ? { kind: "results", matches } : { kind: "empty" });
+        setState(matches.length > 0 ? { kind: "results", matches, currentUserLocation } : { kind: "empty" });
       } catch (error) {
         if (!isMounted) return;
 
@@ -295,13 +323,55 @@ export default function MatchesPage() {
               <div className="inline-flex items-center gap-2 rounded-full bg-cyan-50 px-4 py-2 text-xs font-medium text-cyan-700 ring-1 ring-cyan-100/60">
                 Sắp xếp theo điểm phù hợp
               </div>
+              <div className="inline-flex items-center gap-2 rounded-full bg-slate-50 px-4 py-2 text-xs font-medium text-slate-500 ring-1 ring-slate-100/60">
+                Nhấp vào thẻ để xem hồ sơ đầy đủ
+              </div>
             </div>
 
-            <div className="space-y-4">
-              {state.matches.map((match, index) => (
-                <MatchCard key={match.user.id} match={match} index={index} />
-              ))}
+            <div className="mb-6 flex bg-slate-100 p-1 rounded-xl w-full max-w-sm mx-auto sm:mx-0">
+              <button
+                onClick={() => setActiveTab("list")}
+                className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-medium rounded-lg transition ${activeTab === "list" ? "bg-white text-cyan-700 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
+              >
+                <List className="w-4 h-4" /> Danh sách
+              </button>
+              <button
+                onClick={() => setActiveTab("map")}
+                className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-medium rounded-lg transition ${activeTab === "map" ? "bg-white text-cyan-700 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
+              >
+                <MapIcon className="w-4 h-4" /> Bản đồ
+              </button>
             </div>
+
+            {activeTab === "list" ? (
+              <div className="space-y-4">
+                {state.matches.map((match, index) => (
+                  <MatchCard
+                    key={match.user.id}
+                    match={match}
+                    index={index}
+                    onClick={() => setSelectedMatch(match)}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="animate-in fade-in zoom-in-95 duration-300">
+                <MatchingMap 
+                  matches={state.matches} 
+                  currentUserLocation={state.currentUserLocation}
+                  onSelectMatch={(match) => setSelectedMatch(match)}
+                />
+              </div>
+            )}
+
+            {/* Modal hồ sơ chi tiết */}
+            {selectedMatch && (
+              <MatchProfileModal
+                match={selectedMatch}
+                index={state.matches.indexOf(selectedMatch)}
+                onClose={() => setSelectedMatch(null)}
+              />
+            )}
           </>
         )}
       </main>

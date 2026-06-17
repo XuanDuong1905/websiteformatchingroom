@@ -5,6 +5,7 @@ import { hashPassword } from "@/lib/password";
 import { prisma } from "@/lib/prisma";
 import { studentRegisterSchema } from "@/lib/validations/auth";
 
+
 export const runtime = "nodejs";
 
 function validationErrorResponse(error: unknown) {
@@ -40,6 +41,41 @@ export async function POST(request: Request) {
     }
 
     const { fullName, email, password, university } = parsed.data;
+
+    // Check if email has been verified with OTP in database
+    const verification = await prisma.emailVerification.findUnique({
+      where: {
+        email_purpose: {
+          email,
+          purpose: "verify_email",
+        },
+      },
+    });
+
+    if (!verification) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Vui lòng xác minh OTP trước khi đăng ký.",
+        },
+        { status: 400 }
+      );
+    }
+
+    const isBlocked = await prisma.userBlock.findUnique({
+      where: { email },
+    });
+
+    if (isBlocked) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Email này đã bị chặn khỏi hệ thống. Vui lòng liên hệ quản trị viên.",
+        },
+        { status: 403 }
+      );
+    }
+
     const existingUser = await prisma.user.findUnique({
       where: { email },
       select: { id: true },
@@ -83,6 +119,18 @@ export async function POST(request: Request) {
           },
         },
       },
+    });
+
+    // Clear verification record after successful registration to make it single-use
+    await prisma.emailVerification.delete({
+      where: {
+        email_purpose: {
+          email,
+          purpose: "verify_email",
+        },
+      },
+    }).catch((err: any) => {
+      console.error("Failed to delete email verification record:", err);
     });
 
     return NextResponse.json(

@@ -85,6 +85,7 @@ export async function POST(request: Request) {
         role: true,
         status: true,
         password: true,
+        isActive: true,
         createdAt: true,
         studentProfile: {
           select: {
@@ -105,6 +106,16 @@ export async function POST(request: Request) {
 
     if (!user) {
       return invalidLoginResponse();
+    }
+
+    if (!user.isActive) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.",
+        },
+        { status: 403 }
+      );
     }
 
     const isPasswordValid = await verifyPassword(password, user.password);

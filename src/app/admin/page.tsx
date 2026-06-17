@@ -297,21 +297,30 @@ export default function AdminDashboardPage() {
             </p>
           </div>
 
-          <form onSubmit={handleSearchSubmit} className="flex w-full gap-2 lg:w-auto">
-            <input
-              type="search"
-              value={searchInput}
-              onChange={(event) => setSearchInput(event.target.value)}
-              placeholder="Tìm theo tên, email, địa chỉ..."
-              className="min-w-0 flex-1 rounded-md border border-slate-300 bg-white px-4 py-2 text-sm text-slate-950 outline-none transition focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100 lg:w-80"
-            />
-            <button
-              type="submit"
-              className="rounded-md bg-cyan-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-cyan-700"
+          <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+            <a
+              href="/admin/reports/rooms"
+              className="inline-flex items-center gap-2 rounded-md bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-rose-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600"
             >
-              Tìm
-            </button>
-          </form>
+              ⚠️ Quản lý Report Phòng trọ
+            </a>
+
+            <form onSubmit={handleSearchSubmit} className="flex flex-1 gap-2 lg:flex-none">
+              <input
+                type="search"
+                value={searchInput}
+                onChange={(event) => setSearchInput(event.target.value)}
+                placeholder="Tìm theo tên, email, địa chỉ..."
+                className="min-w-0 flex-1 rounded-md border border-slate-300 bg-white px-4 py-2 text-sm text-slate-950 outline-none transition focus:border-cyan-500 focus:ring-2 focus:ring-cyan-100 lg:w-80"
+              />
+              <button
+                type="submit"
+                className="rounded-md bg-cyan-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-cyan-700"
+              >
+                Tìm
+              </button>
+            </form>
+          </div>
         </div>
 
         <div className="mb-5 flex flex-wrap gap-2">
@@ -519,7 +528,14 @@ function RoomTable({
               {room.district}, {room.city}
             </td>
             <td className="px-4 py-4 text-slate-700">
-              <div className="font-medium">{room.landlord.fullName}</div>
+              <div>
+                <a
+                  href={`/admin/users/${room.landlord.id}`}
+                  className="font-medium text-cyan-750 hover:text-cyan-800 hover:underline transition"
+                >
+                  {room.landlord.fullName}
+                </a>
+              </div>
               <div className="mt-1 text-xs text-slate-500">{room.landlord.email}</div>
             </td>
             <td className="px-4 py-4 font-semibold text-slate-950">
@@ -570,7 +586,14 @@ function LandlordTable({
         {items.map((landlord) => (
           <tr key={landlord.id} className="align-top">
             <td className="px-4 py-4">
-              <div className="font-semibold text-slate-950">{landlord.fullName}</div>
+              <div>
+                <a
+                  href={`/admin/users/${landlord.id}`}
+                  className="font-semibold text-cyan-750 hover:text-cyan-800 hover:underline transition"
+                >
+                  {landlord.fullName}
+                </a>
+              </div>
               <div className="mt-1 text-xs text-slate-500">ID #{landlord.id}</div>
               {viewingId === landlord.id && (
                 <div className="mt-3 rounded-md bg-slate-50 p-3 text-xs leading-5 text-slate-600">
@@ -645,7 +668,14 @@ function StudentTable({
         {items.map((student) => (
           <tr key={student.id} className="align-top">
             <td className="px-4 py-4">
-              <div className="font-semibold text-slate-950">{student.fullName}</div>
+              <div>
+                <a
+                  href={`/admin/users/${student.id}`}
+                  className="font-semibold text-cyan-750 hover:text-cyan-800 hover:underline transition"
+                >
+                  {student.fullName}
+                </a>
+              </div>
               <div className="mt-1 text-xs text-slate-500">ID #{student.id}</div>
               {viewingId === student.id && (
                 <div className="mt-3 rounded-md bg-slate-50 p-3 text-xs leading-5 text-slate-600">

@@ -62,6 +62,20 @@ export async function POST(request: Request) {
       );
     }
 
+    const isBlocked = await prisma.userBlock.findUnique({
+      where: { email },
+    });
+
+    if (isBlocked) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Email này đã bị chặn khỏi hệ thống. Vui lòng liên hệ quản trị viên.",
+        },
+        { status: 403 }
+      );
+    }
+
     const existingUser = await prisma.user.findUnique({
       where: { email },
       select: { id: true },

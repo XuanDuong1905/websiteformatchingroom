@@ -57,6 +57,25 @@ export async function POST(request: Request) {
       businessLicenseImage,
     } = parsed.data;
 
+    const isBlocked = await prisma.userBlock.findFirst({
+      where: {
+        OR: [
+          { email },
+          phone ? { phone } : {}
+        ]
+      }
+    });
+
+    if (isBlocked) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Email hoặc số điện thoại này đã bị chặn khỏi hệ thống. Vui lòng liên hệ quản trị viên.",
+        },
+        { status: 403 }
+      );
+    }
+
     const existingUser = await prisma.user.findUnique({
       where: { email },
       select: { id: true },

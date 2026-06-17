@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 
 type TabKey = "rooms" | "landlords" | "students";
 
@@ -298,12 +299,12 @@ export default function AdminDashboardPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
-            <a
+            <Link
               href="/admin/reports/rooms"
               className="inline-flex items-center gap-2 rounded-md bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-rose-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600"
             >
               ⚠️ Quản lý Report Phòng trọ
-            </a>
+            </Link>
 
             <form onSubmit={handleSearchSubmit} className="flex flex-1 gap-2 lg:flex-none">
               <input

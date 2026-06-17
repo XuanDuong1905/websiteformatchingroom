@@ -46,7 +46,8 @@ function HomeContent() {
             minPrice: minPrice || undefined,
             maxPrice: maxPrice || undefined,
             sort: sort || undefined,
-            search: searchQuery
+            search: searchQuery,
+            limit: 50
           }
         });
 

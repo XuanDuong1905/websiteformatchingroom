@@ -66,17 +66,22 @@ export default function NotificationsPage() {
     fetchNotifications();
   }, [isMounted, fetchNotifications]);
 
-  const handleClick = async (notification: NotificationItem) => {
+  const handleMarkAsRead = async (notification: NotificationItem) => {
     if (!notification.isRead) {
       try {
         await markAsRead(notification.id);
         setNotifications((prev) =>
           prev.map((n) => (n.id === notification.id ? { ...n, isRead: true } : n))
         );
-      } catch {
-        // Ignore
+        window.dispatchEvent(new Event("notifications-read"));
+      } catch (err) {
+        console.error(err);
       }
     }
+  };
+
+  const handleClick = async (notification: NotificationItem) => {
+    await handleMarkAsRead(notification);
     if (notification.link) {
       router.push(notification.link);
     }
@@ -86,8 +91,9 @@ export default function NotificationsPage() {
     try {
       await markAllAsRead();
       setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
-    } catch {
-      // Ignore
+      window.dispatchEvent(new Event("notifications-read"));
+    } catch (err) {
+      console.error(err);
     }
   };
 

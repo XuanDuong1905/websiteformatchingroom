@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 
 import { logout } from "@/lib/api/authApi";
 import NotificationBell from "@/components/notification/NotificationBell";
+import MessageBell from "@/components/chat/MessageBell";
 
 type AuthUser = {
   id?: number | string;
@@ -242,20 +243,13 @@ export default function GlobalStickyHeader({}: HeaderProps = {}) {
             <button
               type="button"
               onClick={() => router.push("/favorites/rooms")}
-              className="relative transition hover:text-red-500"
+              className="relative transition hover:text-red-500 flex items-center justify-center"
               aria-label="Yêu thích"
             >
               <Heart size={22} />
             </button>
             <NotificationBell />
-            <button
-              type="button"
-              onClick={() => router.push("/messages")}
-              className="transition hover:text-cyan-600"
-              aria-label="Tin nhắn"
-            >
-              <MessageCircle size={22} />
-            </button>
+            <MessageBell />
           </div>
 
           <div className="hidden h-8 w-px bg-gray-200 sm:block" />

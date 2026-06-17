@@ -40,12 +40,21 @@ export default function NotificationBell() {
     }
   }, []);
 
-  // Polling unread count every 30s
+  // Polling unread count every 30s and listening to custom event
   useEffect(() => {
      
     fetchUnreadCount();
     const interval = setInterval(fetchUnreadCount, 30000);
-    return () => clearInterval(interval);
+
+    const handleNotificationsRead = () => {
+      fetchUnreadCount();
+    };
+    window.addEventListener("notifications-read", handleNotificationsRead);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("notifications-read", handleNotificationsRead);
+    };
   }, [fetchUnreadCount]);
 
   // Load notifications when dropdown opens
@@ -139,12 +148,12 @@ export default function NotificationBell() {
   };
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className="relative flex items-center justify-center" ref={dropdownRef}>
       {/* Bell Button */}
       <button
         type="button"
         onClick={handleToggle}
-        className="relative transition hover:text-cyan-600"
+        className="relative transition hover:text-cyan-600 flex items-center justify-center"
         aria-label="Thông báo"
       >
         <Bell size={22} />

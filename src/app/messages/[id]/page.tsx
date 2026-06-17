@@ -54,6 +54,7 @@ export default function ChatDetailPage() {
           }
           if (chatRes.success) {
             setActiveConversation(chatRes.data);
+            window.dispatchEvent(new Event("messages-read"));
           } else {
             alert("Không thể tải cuộc trò chuyện");
             router.push("/messages");

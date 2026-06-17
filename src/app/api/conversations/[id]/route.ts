@@ -55,6 +55,18 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       );
     }
 
+    // Mark messages from the other user as read
+    await prisma.message.updateMany({
+      where: {
+        conversationId,
+        senderId: { not: currentUserId },
+        readAt: null,
+      },
+      data: {
+        readAt: new Date(),
+      },
+    });
+
     return NextResponse.json({ success: true, data: conversation });
   } catch (error) {
     console.error("GET /api/conversations/[id] Error:", error);

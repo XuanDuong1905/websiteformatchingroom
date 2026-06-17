@@ -1,11 +1,13 @@
 "use client";
 
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, User, ExternalLink, ShieldCheck } from "lucide-react";
 import { ChatConversation } from "./ConversationItem";
 import MessageBubble from "./MessageBubble";
 import MessageInput from "./MessageInput";
+import MatchProfileModal from "@/components/MatchProfileModal";
+import type { MatchItem } from "@/lib/api/matchApi";
 
 type ChatWindowProps = {
   conversation: ChatConversation;
@@ -25,9 +27,35 @@ export default function ChatWindow({
   isSending,
 }: ChatWindowProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [showMatchProfile, setShowMatchProfile] = useState(false);
+  const [matchData, setMatchData] = useState<MatchItem | null>(null);
+  const [isLoadingProfile, setIsLoadingProfile] = useState(false);
   
   const isUserOne = conversation.userOneId === currentUserId;
   const otherUser = isUserOne ? conversation.userTwo : conversation.userOne;
+
+  const handleViewProfile = async () => {
+    setIsLoadingProfile(true);
+    try {
+      const res = await fetch(`/api/matches/${currentUserId}`);
+      const data = await res.json();
+      if (data.success && data.data) {
+        const found = data.data.find((m: any) => m.user.id === otherUser?.id);
+        if (found) {
+          setMatchData(found);
+          setShowMatchProfile(true);
+        } else {
+          alert("Không tìm thấy thông tin độ phù hợp cho người dùng này (Có thể do không phù hợp tiêu chí cơ bản hoặc khác giới tính).");
+        }
+      } else {
+        alert("Không thể tải dữ liệu.");
+      }
+    } catch (error) {
+      alert("Lỗi kết nối khi tải thông tin.");
+    } finally {
+      setIsLoadingProfile(false);
+    }
+  };
 
   // Auto scroll to bottom
   useEffect(() => {
@@ -75,10 +103,11 @@ export default function ChatWindow({
                 <p className="text-xs text-gray-500">Thành viên Ghép Trọ</p>
                 <span className="text-xs text-gray-300">•</span>
                 <button 
-                  onClick={() => alert("Tính năng xem hồ sơ chi tiết đang phát triển!")}
-                  className="text-xs text-cyan-600 hover:text-cyan-700 hover:underline inline-flex items-center gap-1"
+                  onClick={handleViewProfile}
+                  disabled={isLoadingProfile}
+                  className="text-xs text-cyan-600 hover:text-cyan-700 hover:underline inline-flex items-center gap-1 disabled:opacity-50"
                 >
-                  Xem hồ sơ <ExternalLink className="w-3 h-3 flex-shrink-0" />
+                  {isLoadingProfile ? "Đang tải..." : "Xem hồ sơ"} <ExternalLink className="w-3 h-3 flex-shrink-0" />
                 </button>
               </div>
             )}
@@ -129,6 +158,14 @@ export default function ChatWindow({
         onSend={onSend}
         isSending={isSending}
       />
+
+      {/* Match Profile Modal */}
+      {showMatchProfile && matchData && (
+        <MatchProfileModal
+          match={matchData}
+          onClose={() => setShowMatchProfile(false)}
+        />
+      )}
     </div>
   );
 }

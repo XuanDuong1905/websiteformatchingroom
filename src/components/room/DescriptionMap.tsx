@@ -2,6 +2,9 @@
 
 import React, { useState } from 'react';
 import { Map, MapPin } from 'lucide-react';
+import dynamic from 'next/dynamic';
+
+const RoomLocationMap = dynamic(() => import('@/components/maps/RoomLocationMap'), { ssr: false });
 
 interface DescProps {
     description: string;
@@ -50,21 +53,13 @@ const DescriptionMap = ({ description, address, district, ward }: DescProps) => 
                     {address}, {ward}, {district}
                 </div>
 
-                <div className="w-full h-72 bg-gray-100 rounded-lg overflow-hidden border border-gray-300 relative group">
-                    <iframe
-                        width="100%"
-                        height="100%"
-                        frameBorder="0"
-                        style={{ border: 0 }}
-                        referrerPolicy="no-referrer-when-downgrade"
-                        src={`https://maps.google.com/maps?q=${encodeURIComponent(`${address}, ${ward}, ${district}, Việt Nam`)}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
-                        allowFullScreen
-                        title="Bản đồ vị trí phòng trọ"
-                        className="absolute inset-0"
-                    ></iframe>
-                </div>
+                <RoomLocationMap 
+                    address={address} 
+                    district={district} 
+                    ward={ward} 
+                    roomTitle="Phòng trọ này" 
+                />
             </div>
-
         </div>
     );
 };

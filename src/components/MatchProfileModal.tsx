@@ -1,15 +1,12 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import type { MatchItem } from "@/lib/api/matchApi";
+import { createConversation } from "@/lib/api/chatApi";
+import { getStoredUserId } from "@/lib/auth/storage";
 import ScoreBar, { ScoreBadge } from "@/components/ScoreBar";
-
-type Message = {
-  id: string;
-  text: string;
-  sentAt: Date;
-  isMe: boolean;
-};
+import { MessageCircle } from "lucide-react";
 
 type MatchProfileModalProps = {
   match: MatchItem;
@@ -27,11 +24,8 @@ const avatarGradients = [
 
 export default function MatchProfileModal({ match, index = 0, onClose }: MatchProfileModalProps) {
   const [confirmed, setConfirmed] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [messageText, setMessageText] = useState("");
-  const [isSending, setIsSending] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const [isStartingChat, setIsStartingChat] = useState(false);
+  const router = useRouter();
 
   const { user, matchScore, scores, reasons } = match;
   const safeMatchScore = Number.isFinite(matchScore) ? matchScore : 0;
@@ -65,36 +59,6 @@ export default function MatchProfileModal({ match, index = 0, onClose }: MatchPr
     return () => { document.body.style.overflow = ""; };
   }, []);
 
-  // Auto-scroll tin nhắn xuống cuối
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
-
-  const handleSendMessage = () => {
-    if (!messageText.trim() || isSending) return;
-    const text = messageText.trim();
-    setMessageText("");
-    setIsSending(true);
-
-    setMessages((prev) => [...prev, {
-      id: Date.now().toString(),
-      text,
-      sentAt: new Date(),
-      isMe: true,
-    }]);
-
-    // Giả lập phản hồi hệ thống (tính năng chat thời gian thực sẽ tích hợp sau)
-    setTimeout(() => {
-      setMessages((prev) => [...prev, {
-        id: (Date.now() + 1).toString(),
-        text: `Tin nhắn của bạn đã được gửi đến ${firstName}. Khi họ trả lời, bạn sẽ nhận được thông báo.`,
-        sentAt: new Date(),
-        isMe: false,
-      }]);
-      setIsSending(false);
-      inputRef.current?.focus();
-    }, 1200);
-  };
 
   const handleConfirm = async () => {
     setConfirmed(true);
@@ -207,66 +171,7 @@ export default function MatchProfileModal({ match, index = 0, onClose }: MatchPr
             </section>
           )}
 
-          {/* Nhắn tin */}
-          <section>
-            <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-3">
-              Nhắn tin cho {firstName}
-            </h3>
 
-            {/* Lịch sử tin nhắn */}
-            {messages.length > 0 && (
-              <div className="mb-3 max-h-44 overflow-y-auto space-y-2 rounded-2xl bg-slate-50 p-3 border border-slate-100">
-                {messages.map((msg) => (
-                  <div
-                    key={msg.id}
-                    className={`flex ${msg.isMe ? "justify-end" : "justify-start"}`}
-                  >
-                    <div
-                      className={`max-w-[82%] rounded-2xl px-3.5 py-2 text-sm leading-relaxed ${
-                        msg.isMe
-                          ? "bg-cyan-600 text-white rounded-br-md shadow-sm"
-                          : "bg-white text-slate-600 ring-1 ring-slate-100 rounded-bl-md shadow-sm"
-                      }`}
-                    >
-                      {msg.text}
-                      <p className={`text-[10px] mt-1 ${msg.isMe ? "text-cyan-200" : "text-slate-400"}`}>
-                        {msg.sentAt.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-                <div ref={messagesEndRef} />
-              </div>
-            )}
-
-            {/* Ô nhập tin nhắn */}
-            <div className="flex gap-2 items-end">
-              <input
-                id="match-message-input"
-                ref={inputRef}
-                type="text"
-                value={messageText}
-                onChange={(e) => setMessageText(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSendMessage(); }}}
-                placeholder={`Nhắn tin cho ${firstName}...`}
-                disabled={isSending}
-                className="flex-1 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-800 placeholder-slate-400 outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100/60 transition disabled:opacity-60"
-              />
-              <button
-                id="match-message-send-btn"
-                onClick={handleSendMessage}
-                disabled={!messageText.trim() || isSending}
-                className="shrink-0 rounded-2xl bg-cyan-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-cyan-700 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                {isSending ? (
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-                    Gửi
-                  </span>
-                ) : "Gửi"}
-              </button>
-            </div>
-          </section>
         </div>
 
         {/* ── FOOTER – Xác nhận ghép đôi ── */}
@@ -280,7 +185,7 @@ export default function MatchProfileModal({ match, index = 0, onClose }: MatchPr
               Đã xác nhận ghép đôi với {firstName}!
             </div>
           ) : (
-            <div className="flex gap-3">
+            <div className="flex gap-2">
               <button
                 id="match-confirm-btn"
                 onClick={handleConfirm}
@@ -289,9 +194,39 @@ export default function MatchProfileModal({ match, index = 0, onClose }: MatchPr
                 ✓ Xác nhận ghép đôi
               </button>
               <button
+                onClick={async () => {
+                  const currentUserId = getStoredUserId();
+                  if (!currentUserId) {
+                    alert("Bạn cần đăng nhập để nhắn tin!");
+                    router.push("/login");
+                    return;
+                  }
+                  if (currentUserId === user.id) {
+                    alert("Bạn không thể chat với chính mình.");
+                    return;
+                  }
+                  setIsStartingChat(true);
+                  try {
+                    const res = await createConversation(user.id);
+                    if (res.success && res.data?.id) {
+                      router.push(`/messages/${res.data.id}`);
+                    }
+                  } catch {
+                    alert("Không thể tạo cuộc trò chuyện");
+                  } finally {
+                    setIsStartingChat(false);
+                  }
+                }}
+                disabled={isStartingChat}
+                className="flex-1 flex items-center justify-center gap-1.5 rounded-2xl border border-cyan-200 bg-cyan-50 py-3 text-sm font-semibold text-cyan-700 transition hover:bg-cyan-100 active:scale-[0.98] disabled:opacity-50"
+              >
+                <MessageCircle className="w-4 h-4" />
+                {isStartingChat ? "Đang kết nối..." : "Nhắn tin"}
+              </button>
+              <button
                 id="match-dismiss-btn"
                 onClick={handleClose}
-                className="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 active:scale-[0.98]"
+                className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 active:scale-[0.98]"
               >
                 Bỏ qua
               </button>

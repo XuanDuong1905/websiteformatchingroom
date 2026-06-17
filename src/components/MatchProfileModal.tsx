@@ -23,7 +23,6 @@ const avatarGradients = [
 ];
 
 export default function MatchProfileModal({ match, index = 0, onClose }: MatchProfileModalProps) {
-  const [confirmed, setConfirmed] = useState(false);
   const [isStartingChat, setIsStartingChat] = useState(false);
   const router = useRouter();
 
@@ -60,9 +59,28 @@ export default function MatchProfileModal({ match, index = 0, onClose }: MatchPr
   }, []);
 
 
-  const handleConfirm = async () => {
-    setConfirmed(true);
-    // TODO: PATCH /api/matches để cập nhật status → "accepted"
+  const handleStartChat = async () => {
+    const currentUserId = getStoredUserId();
+    if (!currentUserId) {
+      alert("Bạn cần đăng nhập để nhắn tin!");
+      router.push("/login");
+      return;
+    }
+    if (currentUserId === user.id) {
+      alert("Bạn không thể chat với chính mình.");
+      return;
+    }
+    setIsStartingChat(true);
+    try {
+      const res = await createConversation(user.id);
+      if (res.success && res.data?.id) {
+        router.push(`/messages/${res.data.id}`);
+      }
+    } catch {
+      alert("Không thể tạo cuộc trò chuyện. Vui lòng thử lại!");
+    } finally {
+      setIsStartingChat(false);
+    }
   };
 
   return (
@@ -122,13 +140,7 @@ export default function MatchProfileModal({ match, index = 0, onClose }: MatchPr
               </p>
             </div>
             <div className="flex items-center">
-              {confirmed ? (
-                <span className="inline-flex items-center gap-1.5 rounded-2xl bg-emerald-400/30 border border-emerald-300/50 px-4 py-2 text-xs font-bold text-white">
-                  ✓ Đã xác nhận
-                </span>
-              ) : (
-                <ScoreBadge score={safeMatchScore} />
-              )}
+              <ScoreBadge score={safeMatchScore} />
             </div>
           </div>
         </div>
@@ -174,64 +186,26 @@ export default function MatchProfileModal({ match, index = 0, onClose }: MatchPr
 
         </div>
 
-        {/* ── FOOTER – Xác nhận ghép đôi ── */}
+        {/* ── FOOTER – Nhắn tin để trao đổi ghép trọ ── */}
         <div className="shrink-0 px-5 py-4 border-t border-slate-100 bg-white">
-          {confirmed ? (
-            <div
-              id="match-confirmed-banner"
-              className="flex items-center justify-center gap-2 rounded-2xl bg-emerald-50 border border-emerald-200 py-3.5 text-sm font-semibold text-emerald-700"
+          <div className="flex gap-2">
+            <button
+              id="match-chat-btn"
+              onClick={handleStartChat}
+              disabled={isStartingChat}
+              className="flex-1 flex items-center justify-center gap-2 rounded-2xl bg-cyan-600 py-3.5 text-sm font-semibold text-white shadow-md transition hover:bg-cyan-700 active:scale-[0.98] disabled:opacity-60"
             >
-              <span className="text-base">✓</span>
-              Đã xác nhận ghép đôi với {firstName}!
-            </div>
-          ) : (
-            <div className="flex gap-2">
-              <button
-                id="match-confirm-btn"
-                onClick={handleConfirm}
-                className="flex-1 rounded-2xl bg-cyan-600 py-3 text-sm font-semibold text-white shadow-md transition hover:bg-cyan-700 active:scale-[0.98]"
-              >
-                ✓ Xác nhận ghép đôi
-              </button>
-              <button
-                onClick={async () => {
-                  const currentUserId = getStoredUserId();
-                  if (!currentUserId) {
-                    alert("Bạn cần đăng nhập để nhắn tin!");
-                    router.push("/login");
-                    return;
-                  }
-                  if (currentUserId === user.id) {
-                    alert("Bạn không thể chat với chính mình.");
-                    return;
-                  }
-                  setIsStartingChat(true);
-                  try {
-                    const res = await createConversation(user.id);
-                    if (res.success && res.data?.id) {
-                      router.push(`/messages/${res.data.id}`);
-                    }
-                  } catch {
-                    alert("Không thể tạo cuộc trò chuyện");
-                  } finally {
-                    setIsStartingChat(false);
-                  }
-                }}
-                disabled={isStartingChat}
-                className="flex-1 flex items-center justify-center gap-1.5 rounded-2xl border border-cyan-200 bg-cyan-50 py-3 text-sm font-semibold text-cyan-700 transition hover:bg-cyan-100 active:scale-[0.98] disabled:opacity-50"
-              >
-                <MessageCircle className="w-4 h-4" />
-                {isStartingChat ? "Đang kết nối..." : "Nhắn tin"}
-              </button>
-              <button
-                id="match-dismiss-btn"
-                onClick={handleClose}
-                className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 active:scale-[0.98]"
-              >
-                Bỏ qua
-              </button>
-            </div>
-          )}
+              <MessageCircle className="w-4 h-4" />
+              {isStartingChat ? "Đang kết nối..." : `Nhắn tin với ${firstName}`}
+            </button>
+            <button
+              id="match-dismiss-btn"
+              onClick={handleClose}
+              className="rounded-2xl border border-slate-200 bg-white px-5 py-3.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 active:scale-[0.98]"
+            >
+              Bỏ qua
+            </button>
+          </div>
         </div>
       </div>
     </div>

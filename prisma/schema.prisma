@@ -212,6 +212,8 @@ model UserProfile {
   occupation        String?      @db.VarChar(150)
   currentAddress    String?      @db.VarChar(255)
   preferredDistrict String?      @db.VarChar(100)
+  latitude          Float?
+  longitude         Float?
   bio               String?      @db.Text
   privacyLevel      PrivacyLevel @default(unknown)
   createdAt         DateTime     @default(now())

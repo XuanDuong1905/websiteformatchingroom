@@ -14,6 +14,10 @@ const userInclude = {
     select: {
       schoolName: true,
       preferredDistrict: true,
+      currentAddress: true,
+      latitude: true,
+      longitude: true,
+      birthYear: true,
     },
   },
   lifestyleProfile: {
@@ -94,8 +98,28 @@ export async function GET(_request: Request, { params }: Params) {
     ),
   );
 
+  // Fuzz coordinates to protect privacy (offset by ~100m-300m stably based on user ID)
+  const fuzzedMatches = matches.map(match => {
+    const seed = match.user.id;
+    const fuzzOffsetLat = (Math.sin(seed * 12.9898 + 78.233) * 43758.5453 % 1) * 0.004 - 0.002;
+    const fuzzOffsetLng = (Math.cos(seed * 12.9898 + 78.233) * 43758.5453 % 1) * 0.004 - 0.002;
+    
+    return {
+      ...match,
+      user: {
+        ...match.user,
+        latitude: match.user.latitude ? match.user.latitude + fuzzOffsetLat : null,
+        longitude: match.user.longitude ? match.user.longitude + fuzzOffsetLng : null,
+      }
+    };
+  });
+
   return NextResponse.json({
     success: true,
-    data: matches,
+    data: fuzzedMatches,
+    currentUser: {
+      latitude: currentUser.profile?.latitude,
+      longitude: currentUser.profile?.longitude,
+    }
   });
 }

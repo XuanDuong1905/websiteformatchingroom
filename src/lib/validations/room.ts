@@ -150,6 +150,7 @@ export const roomListQuerySchema = z
     maxArea: z.coerce.number().min(0).optional(),
     landlordId: z.coerce.number().int().min(1).optional(),
     status: statusSchema.optional(),
+    sort: z.enum(["newest", "price_asc", "price_desc"]).optional(),
   })
   .refine(
     (data) =>

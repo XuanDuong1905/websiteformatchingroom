@@ -135,12 +135,26 @@ export async function GET(request: NextRequest) {
     const where = buildRoomWhere(query, mine);
     const skip = (query.page - 1) * query.limit;
 
+    let orderBy: Prisma.RoomOrderByWithRelationInput | Prisma.RoomOrderByWithRelationInput[] = {
+      createdAt: "desc",
+    };
+
+    if (query.sort === "price_asc") {
+      orderBy = [
+        { price: "asc" },
+        { createdAt: "desc" },
+      ];
+    } else if (query.sort === "price_desc") {
+      orderBy = [
+        { price: "desc" },
+        { createdAt: "desc" },
+      ];
+    }
+
     const [rooms, total] = await Promise.all([
       prisma.room.findMany({
         where,
-        orderBy: {
-          createdAt: "desc",
-        },
+        orderBy,
         skip,
         take: query.limit,
         include: includeRoomRelations(),

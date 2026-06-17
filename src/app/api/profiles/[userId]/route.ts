@@ -47,6 +47,27 @@ export async function PUT(request: Request, { params }: Params) {
   const body = await request.json();
   const id = Number(userId);
 
+  // Auto geocode address
+  let latitude: number | null = null;
+  let longitude: number | null = null;
+
+  try {
+    const addressToGeocode = body.currentAddress || body.preferredDistrict;
+    if (addressToGeocode) {
+      const q = encodeURIComponent(`${addressToGeocode}, TP. Hồ Chí Minh`);
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=1`, {
+        headers: { "User-Agent": "GhepTroDemoApp/1.0" }
+      });
+      const data = await res.json();
+      if (data && data.length > 0) {
+        latitude = parseFloat(data[0].lat);
+        longitude = parseFloat(data[0].lon);
+      }
+    }
+  } catch (error) {
+    console.error("Lỗi Geocode khi cập nhật profile:", error);
+  }
+
   const [userProfile, lifestyleProfile] = await prisma.$transaction([
     prisma.userProfile.upsert({
       where: { userId: id },
@@ -58,6 +79,8 @@ export async function PUT(request: Request, { params }: Params) {
         preferredDistrict: body.preferredDistrict,
         bio: body.bio,
         privacyLevel: body.privacyLevel,
+        latitude: latitude !== null ? latitude : undefined,
+        longitude: longitude !== null ? longitude : undefined,
       },
       create: {
         userId: id,
@@ -68,6 +91,8 @@ export async function PUT(request: Request, { params }: Params) {
         preferredDistrict: body.preferredDistrict,
         bio: body.bio,
         privacyLevel: body.privacyLevel ?? "unknown",
+        latitude: latitude,
+        longitude: longitude,
       },
     }),
     prisma.lifestyleProfile.upsert({

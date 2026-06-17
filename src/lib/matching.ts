@@ -6,6 +6,10 @@ export type MatchingUser = {
   profile: {
     schoolName: string | null;
     preferredDistrict: string | null;
+    currentAddress: string | null;
+    latitude: number | null;
+    longitude: number | null;
+    birthYear: number | null;
   } | null;
   lifestyleProfile: {
     budgetMin: number | null;
@@ -29,6 +33,12 @@ export type MatchResult = {
     gender: string;
     school: string | null;
     reputationScore: unknown;
+    latitude?: number | null;
+    longitude?: number | null;
+    birthYear?: number | null;
+    currentAddress?: string | null;
+    budgetMin?: number | null;
+    budgetMax?: number | null;
   };
   matchScore: number;
   scores: {
@@ -176,8 +186,14 @@ export function calculateMatch(a: MatchingUser, b: MatchingUser): MatchResult {
       id: b.id,
       fullName: b.fullName,
       gender: b.gender,
-      school: b.profile?.schoolName ?? null,
+      school: b.profile?.schoolName || null,
       reputationScore: b.reputationScore,
+      latitude: b.profile?.latitude,
+      longitude: b.profile?.longitude,
+      birthYear: b.profile?.birthYear,
+      currentAddress: b.profile?.currentAddress,
+      budgetMin: b.lifestyleProfile?.budgetMin,
+      budgetMax: b.lifestyleProfile?.budgetMax,
     },
     matchScore,
     scores: {

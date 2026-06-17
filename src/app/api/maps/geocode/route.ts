@@ -33,29 +33,58 @@ export async function GET(request: Request) {
 
     let foundData = null;
 
-    for (const query of searchQueries) {
-      const response = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`, {
-        headers: {
-          "User-Agent": "GhepTroDemoApp/1.0"
+    // 1. Try Nominatim first
+    try {
+      for (const query of searchQueries) {
+        const response = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`, {
+          headers: {
+            "User-Agent": "GhepTroDemoApp/1.0"
+          },
+          signal: AbortSignal.timeout(3000)
+        });
+        
+        const data = await response.json();
+        
+        if (data && data.length > 0) {
+          foundData = {
+            lat: parseFloat(data[0].lat),
+            lng: parseFloat(data[0].lon),
+            formattedAddress: data[0].display_name
+          };
+          break;
         }
-      });
-      
-      const data = await response.json();
-      
-      if (data && data.length > 0) {
-        foundData = data[0];
-        break; // Stop if we found a match
+      }
+    } catch (error) {
+      console.error("Nominatim Geocode Error:", error);
+    }
+
+    // 2. Try Photon Fallback if Nominatim failed or returned empty
+    if (!foundData) {
+      try {
+        for (const query of searchQueries) {
+          const response = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=1`, {
+             signal: AbortSignal.timeout(3000)
+          });
+          const data = await response.json();
+          if (data && data.features && data.features.length > 0) {
+            const coords = data.features[0].geometry.coordinates; // [lon, lat]
+            foundData = {
+              lat: coords[1],
+              lng: coords[0],
+              formattedAddress: data.features[0].properties.name || query
+            };
+            break;
+          }
+        }
+      } catch (error) {
+        console.error("Photon Geocode Error:", error);
       }
     }
 
     if (foundData) {
       return NextResponse.json({
         success: true,
-        data: {
-          lat: parseFloat(foundData.lat),
-          lng: parseFloat(foundData.lon),
-          formattedAddress: foundData.display_name
-        }
+        data: foundData
       });
     }
 

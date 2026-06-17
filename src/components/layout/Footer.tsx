@@ -29,7 +29,7 @@ const Footer = () => {
                     </div>
                 </div>
                 <div className="text-center pt-6 border-t border-gray-100 text-gray-400 text-xs">
-                    © {new Date().getFullYear()} Đồ án Môn học - Nhóm 6. All rights reserved.
+                    © {new Date().getFullYear()} Đồ án Môn học - Nhóm 5. All rights reserved.
                 </div>
             </div>
         </footer>

@@ -50,7 +50,7 @@ export default function ReportedRoomsPage() {
   };
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+     
     void loadReportedRooms();
   }, []);
 

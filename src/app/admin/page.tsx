@@ -227,9 +227,9 @@ export default function AdminDashboardPage() {
   }
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+     
     void loadItems(activeTab, page, search);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [activeTab, page, search]);
 
   function switchTab(tab: TabKey) {

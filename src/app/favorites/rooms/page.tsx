@@ -33,7 +33,7 @@ export default function FavoriteRoomsPage() {
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+     
     setIsMounted(true);
   }, []);
 
@@ -160,7 +160,7 @@ export default function FavoriteRoomsPage() {
                       className="w-full sm:w-40 h-40 sm:h-auto bg-gray-200 flex-shrink-0 cursor-pointer"
                       onClick={() => router.push(`/room/${fav.room.id}`)}
                     >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      { }
                       <img
                         src={coverImage}
                         alt={fav.room.title}

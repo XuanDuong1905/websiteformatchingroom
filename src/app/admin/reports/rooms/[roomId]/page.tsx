@@ -83,9 +83,9 @@ export default function RoomReportDetailPage({ params }: { params: Promise<{ roo
   };
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+     
     void loadRoomDetails();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [roomId]);
 
   const handleResolve = async (action: "dismiss" | "warn" | "hide") => {

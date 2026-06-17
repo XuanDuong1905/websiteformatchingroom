@@ -102,9 +102,9 @@ export default function UserModerationPage({ params }: { params: Promise<{ userI
   };
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+     
     void loadUserDetails();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [userId]);
 
   const handleWarnUser = async () => {

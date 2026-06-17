@@ -14,7 +14,7 @@ function SearchPageContent() {
   const [isLoading, setIsLoading] = useState(!!query);
   const [rooms, setRooms] = useState<RoomSummary[]>([]);
   const [profiles, setProfiles] = useState<MatchItem[]>([]);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const [parsedQuery, setParsedQuery] = useState<any>(null);
 
   useEffect(() => {
@@ -27,7 +27,7 @@ function SearchPageContent() {
           // Map profiles to match MatchCard structure (which expects MatchItem)
           // The search API returns User, we need to map it nicely
           // MatchCard expects: user: {id, fullName, gender, school, reputationScore}, matchScore, scores, reasons
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+           
           const mappedProfiles = json.data.profiles.map((p: any) => ({
             user: {
               id: p.id,

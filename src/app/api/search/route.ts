@@ -11,7 +11,7 @@ export async function GET(request: Request) {
     const parsed = parseSearchQuery(q);
 
     // 1. Build Room query
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const roomWhere: any = {
       status: "ACTIVE",
     };
@@ -72,7 +72,7 @@ export async function GET(request: Request) {
     });
 
     // 2. Build Profile query
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const profileWhere: any = {
       isActive: true,
       role: { in: ["STUDENT", "ADMIN"] }, // only students look for roommates

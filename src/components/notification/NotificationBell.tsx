@@ -42,7 +42,7 @@ export default function NotificationBell() {
 
   // Polling unread count every 30s
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+     
     fetchUnreadCount();
     const interval = setInterval(fetchUnreadCount, 30000);
     return () => clearInterval(interval);

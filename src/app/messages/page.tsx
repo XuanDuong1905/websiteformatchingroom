@@ -15,7 +15,7 @@ export default function MessagesPage() {
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+     
     setIsMounted(true);
   }, []);
 
@@ -25,7 +25,7 @@ export default function MessagesPage() {
       window.location.href = "/login";
       return;
     }
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+     
     setUserId(id);
 
     const loadData = async () => {

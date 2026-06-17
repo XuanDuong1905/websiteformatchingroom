@@ -250,7 +250,7 @@ export default function ProfileInfoForm() {
                   <div className="relative">
                     <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-cyan-500 bg-slate-200 flex items-center justify-center shadow-md">
                       {avatarPreview ? (
-                        /* eslint-disable-next-line @next/next/no-img-element */
+                         
                         <img src={avatarPreview} alt="Avatar" className="w-full h-full object-cover" />
                       ) : (
                         <span className="text-slate-400 font-bold text-2xl">

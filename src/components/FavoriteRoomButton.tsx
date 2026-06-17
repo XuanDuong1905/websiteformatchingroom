@@ -40,7 +40,7 @@ export default function FavoriteRoomButton({
   useEffect(() => {
     const userId = getStoredUserId();
     if (!userId) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+       
       setIsChecked(true);
       return;
     }

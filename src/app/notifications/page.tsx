@@ -33,7 +33,7 @@ export default function NotificationsPage() {
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+     
     setIsMounted(true);
   }, []);
 
@@ -62,7 +62,7 @@ export default function NotificationsPage() {
       window.location.href = "/login";
       return;
     }
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+     
     fetchNotifications();
   }, [isMounted, fetchNotifications]);
 

@@ -1,446 +1,79 @@
-# Website Tìm Trọ
+# Roommate & Rental Matching Platform (Group 5)
 
-Dự án website tìm trọ sử dụng **Next.js**, **MySQL**, **Prisma** và **Tailwind CSS**.
+## 🌟 Introduction
+Welcome to our **Roommate & Rental Matching Platform** – A smart connection hub built for students! 
+This project aims to completely resolve the difficulties students face when looking for accommodations and compatible roommates. Unlike traditional Facebook groups or generic rental websites, our system not only provides rental listings but also integrates an advanced **Matching Algorithm** based on lifestyle, daily habits, and budget to recommend the highly compatible roommates.
 
-## 1. Công nghệ sử dụng
+---
 
-| Công cụ | Phiên bản khuyến nghị / đang dùng |
-|---|---|
-| Node.js | 24.x |
-| npm | 11.x |
-| Next.js | 16.x |
-| Prisma | 7.x |
-| MySQL | 8.x hoặc MySQL đi kèm Laragon |
-| Laragon | Bản Full 64-bit |
-| Git | Bản mới nhất |
+## 🚀 How It Works
+The platform operates through a secure and tightly integrated connection process:
+1. **Identity Verification:** Students registering for an account are strictly verified through an integrated Blacklist system to prevent spam and frauds.
+2. **Lifestyle Survey:** Users fill out a detailed profile regarding their sleep schedule, cleaning frequency, pet preferences, etc.
+3. **Data Analysis:** Our Weighted Scoring Algorithm processes the data and generates a list of the most suitable candidates (MatchScore > 50%).
+4. **Connect & Chat:** Direct, secure messaging within the platform featuring a Real-time notification system.
+5. **Distance Geocoding:** The Multi-layer Map Matching Algorithm accurately calculates the real distance to campuses/rentals while applying Coordinate Fuzzing to obfuscate exact locations, ensuring student safety and privacy against stalkers.
 
-Kiểm tra phiên bản trên máy:
+🎥 **Watch the Demo Video here:** [Click to watch Demo Video on Google Drive](https://drive.google.com/file/d/1zM9-svYqr5ye1I0VI8TCpdj1OPWPHmoK/view?usp=sharing)
 
+---
+
+## 📖 User Guide
+To start using the platform, follow these simple steps:
+1. **Create an Account:** Go to the Registration page, enter your email and password.
+2. **Complete your Profile:** Update your personal information and, most importantly, fill out the **Lifestyle Profile** as honestly as possible.
+3. **Find a Roommate:** Navigate to the *Roommate Matching* feature. The system will automatically suggest the best candidates for you along with detailed matching reasons.
+4. **Find a Rental:** Go to the *Rentals* page to browse available rooms. You can filter by distance, price, and amenities.
+5. **Chat:** Click the "Message" button on a roommate profile or rental post to communicate directly and safely without giving out your personal phone number or social media accounts.
+
+---
+
+## 💻 Developer Guide (Local Setup)
+To download the source code and run the project locally, please follow these steps:
+
+**1. Prerequisites**
+- Node.js (v18.x or higher)
+- `npm` package manager
+
+**2. Installation**
+Open your Terminal, navigate to your desired directory, and clone the repository:
 ```bash
-node -v
-npm -v
-git --version
-npx prisma -v
+git clone -b main --single-branch https://github.com/XuanDuong1905/TDTT-Gruop5-Web-t-m-tr-.git .
 ```
 
-## 2. Công cụ cần cài trước
-
-Mỗi thành viên cần cài:
-
-- Node.js LTS
-- Git
-- Laragon hoặc XAMPP để chạy MySQL
-- Visual Studio Code
-- GitHub Desktop hoặc dùng Git bằng terminal
-
-Khuyến nghị dùng **Laragon** vì nhẹ, dễ bật MySQL và phù hợp cho đồ án web.
-
-## 3. Clone project về máy
-
-Mở terminal tại thư mục muốn lưu project, chạy:
-
-```bash
-git clone https://github.com/TEN_GITHUB/ghep-tro-project.git
-cd ghep-tro-project
-```
-
-Thay `TEN_GITHUB` bằng tên GitHub thật của nhóm.
-
-Ví dụ:
-
-```bash
-git clone https://github.com/caoduong19052006/ghep-tro-project.git
-cd ghep-tro-project
-```
-
-## 4. Cài thư viện
-
-Sau khi clone project về, chạy:
-
+**3. Install Dependencies**
 ```bash
 npm install
 ```
+*(This command will also automatically generate the Prisma ORM client for you).*
 
-Lệnh này sẽ cài toàn bộ thư viện trong `package.json`.
-
-## 5. Tạo database MySQL
-
-Mở Laragon:
-
-```text
-Start All
-```
-
-Vào phpMyAdmin hoặc công cụ quản lý database, tạo database:
-
-```sql
-CREATE DATABASE ghep_tro_db;
-```
-
-Tên database nên thống nhất là:
-
-```text
-ghep_tro_db
-```
-
-## 6. Tạo file môi trường `.env`
-
-Trong thư mục gốc project, tạo file:
-
-```text
-.env
-```
-
-Nội dung:
-
+**4. Environment Variables**
+Create a `.env` file in the root directory of the project and insert the Aiven Cloud database connection string:
 ```env
-DATABASE_URL="mysql://root:@localhost:3306/ghep_tro_db"
+DATABASE_URL="mysql://avnadmin:AVNS_U_yPih-oVbJ7s5L210s@ghep-tro-db-student-65bd.h.aivencloud.com:15469/defaultdb?ssl-mode=REQUIRED"
 ```
 
-Nếu MySQL trên máy có mật khẩu, sửa lại:
-
-```env
-DATABASE_URL="mysql://root:MAT_KHAU@localhost:3306/ghep_tro_db"
-```
-
-Ví dụ mật khẩu là `root`:
-
-```env
-DATABASE_URL="mysql://root:root@localhost:3306/ghep_tro_db"
-```
-
-Lưu ý: file `.env` không được push lên GitHub.
-
-## 7. Chạy Prisma
-
-Sau khi tạo database và file `.env`, chạy:
-
-```bash
-npx prisma generate
-npx prisma migrate dev
-```
-
-## 20. Tài liệu database
-
-- [Cấu trúc 12 bảng và chức năng từng cột](docs/database-schema/README.md)
-- [Database mẫu, tài khoản demo và cách chạy seed](docs/sample-data/README.md)
-
-Nếu muốn mở giao diện xem database bằng Prisma:
-
-```bash
-npx prisma studio
-```
-
-## 8. Chạy project
-
-Chạy server development:
-
+**5. Run the Local Server**
 ```bash
 npm run dev
 ```
+Open `http://localhost:3000` in your browser to experience the application.
 
-Mở trình duyệt:
+---
 
-```text
-http://localhost:3000
-```
+## 🤝 Contributing
+This project is an open-source academic product, and we always welcome new ideas! If you would like to contribute (fix bugs, add features, optimize UI):
+1. **Fork** this repository to your account.
+2. **Create a new Branch** for your feature (`git checkout -b feature/amazing-feature`).
+3. **Commit** your changes (`git commit -m 'Add amazing feature'`).
+4. **Push** to the branch (`git push origin feature/amazing-feature`).
+5. Open a **Pull Request** and we will review it as soon as possible!
 
-Test API users:
+Every contribution, no matter how small, helps make the student rental community better!
 
-```text
-http://localhost:3000/api/users
-```
+---
 
-Nếu hiện:
-
-```json
-[]
-```
-
-nghĩa là Next.js đã kết nối được với MySQL thông qua Prisma.
-
-## 9. Cấu trúc thư mục chính
-
-```text
-ghep-tro-project/
-│
-├── prisma/
-│   └── schema.prisma
-│
-├── src/
-│   ├── app/
-│   │   ├── api/
-│   │   │   └── users/
-│   │   │       └── route.js
-│   │   ├── layout.tsx
-│   │   └── page.tsx
-│   │
-│   └── lib/
-│       └── prisma.js
-│
-├── .env.example
-├── .gitignore
-├── package.json
-├── prisma.config.ts
-└── README.md
-```
-
-## 10. Quy tắc làm việc với Git
-
-Không code trực tiếp trên nhánh `main`.
-
-Mỗi thành viên nên tạo một nhánh riêng theo chức năng đang làm.
-
-Ví dụ:
-
-```bash
-git checkout main
-git pull origin main
-git checkout -b feature/login
-```
-
-Một số cách đặt tên nhánh:
-
-```text
-feature/login
-feature/register
-feature/room-list
-feature/room-detail
-feature/profile
-feature/review
-fix/login-error
-fix/prisma-config
-```
-
-## 11. Quy trình pull code mới nhất trước khi làm
-
-Trước khi bắt đầu code mỗi ngày, chạy:
-
-```bash
-git checkout main
-git pull origin main
-```
-
-Sau đó chuyển qua nhánh của mình:
-
-```bash
-git checkout ten-nhanh-cua-minh
-```
-
-Nếu muốn cập nhật code mới từ `main` vào nhánh đang làm:
-
-```bash
-git pull origin main
-```
-
-Ví dụ:
-
-```bash
-git checkout feature/login
-git pull origin main
-```
-
-Nếu có conflict, sửa conflict trong VS Code, sau đó:
-
-```bash
-git add .
-git commit -m "Resolve merge conflict"
-```
-
-## 12. Quy trình push code lên GitHub
-
-Sau khi code xong một phần nhỏ và đã test chạy ổn:
-
-```bash
-git status
-git add .
-git commit -m "Mo ta ngan gon phan da lam"
-git push origin ten-nhanh-cua-minh
-```
-
-Ví dụ:
-
-```bash
-git status
-git add .
-git commit -m "Add login page UI"
-git push origin feature/login
-```
-
-## 13. Tạo Pull Request để merge code
-
-Sau khi push nhánh lên GitHub:
-
-1. Vào repo trên GitHub.
-2. Bấm **Compare & pull request**.
-3. Chọn merge từ nhánh của mình vào `main`.
-4. Viết mô tả ngắn gọn đã làm gì.
-5. Gửi cho nhóm review.
-6. Chỉ merge khi code chạy ổn và không conflict.
-
-Không tự ý merge nếu chưa test hoặc chưa báo nhóm.
-
-## 14. Quy tắc commit message
-
-Commit message nên ngắn gọn, rõ ý.
-
-Ví dụ tốt:
-
-```text
-Add login page UI
-Add Prisma user model
-Create room list API
-Fix database connection
-Update README setup guide
-```
-
-Không nên commit kiểu:
-
-```text
-update
-fix
-abc
-done
-code moi
-```
-
-## 15. Quy tắc tránh conflict
-
-Để hạn chế đụng code nhau:
-
-- Mỗi người làm một phần riêng.
-- Không sửa file của người khác nếu chưa báo.
-- Trước khi code luôn `pull` code mới nhất.
-- Commit từng phần nhỏ, không gom quá nhiều thay đổi.
-- Không push file `.env`.
-- Không push thư mục `node_modules`.
-- Không sửa lung tung `package-lock.json` nếu không cài thư viện mới.
-
-## 16. Khi cần cài thư viện mới
-
-Nếu một thành viên cần cài thư viện:
-
-```bash
-npm install ten-thu-vien
-```
-
-Sau đó commit cả:
-
-```text
-package.json
-package-lock.json
-```
-
-Ví dụ:
-
-```bash
-npm install bcryptjs
-git add package.json package-lock.json
-git commit -m "Install bcryptjs"
-git push origin feature/login
-```
-
-Các thành viên khác sau khi pull code mới cần chạy lại:
-
-```bash
-npm install
-```
-
-## 17. Các lệnh hay dùng
-
-Chạy project:
-
-```bash
-npm run dev
-```
-
-Cài thư viện:
-
-```bash
-npm install
-```
-
-Generate Prisma Client:
-
-```bash
-npx prisma generate
-```
-
-Chạy migration:
-
-```bash
-npx prisma migrate dev
-```
-
-Mở Prisma Studio:
-
-```bash
-npx prisma studio
-```
-
-Xem trạng thái Git:
-
-```bash
-git status
-```
-
-Lấy code mới nhất:
-
-```bash
-git pull origin main
-```
-
-Push code:
-
-```bash
-git push origin ten-nhanh-cua-minh
-```
-
-## 18. Quy trình làm việc đề xuất cho nhóm
-
-Mỗi lần làm chức năng mới:
-
-```bash
-git checkout main
-git pull origin main
-git checkout -b feature/ten-chuc-nang
-```
-
-Sau khi code xong:
-
-```bash
-npm run dev
-git status
-git add .
-git commit -m "Add ten chuc nang"
-git push origin feature/ten-chuc-nang
-```
-
-Sau đó lên GitHub tạo Pull Request để merge vào `main`.
-
-## 19. Lưu ý quan trọng
-
-- Không push `.env`.
-- Không push `node_modules`.
-- Không code trực tiếp trên `main`.
-- Luôn pull code mới trước khi làm.
-- Luôn test `npm run dev` trước khi push.
-- Nếu sửa Prisma schema, phải chạy lại:
-
-```bash
-npx prisma generate
-npx prisma migrate dev
-```
-
-- Nếu pull code về mà lỗi thư viện, chạy:
-
-```bash
-npm install
-```
-
-- Nếu pull code về mà lỗi Prisma, chạy:
-
-```bash
-npx prisma generate
-npx prisma migrate dev
-```
+## 🙏 Acknowledgements
+- A sincere thank you to our **Instructing Professor** for the dedicated guidance, support, and direction in helping our group successfully complete this Computational Thinking coursework.
+- Thank you to all the members of **Group 5** for staying up late, waking up early, and collaborating seamlessly to turn an idea on paper into a functional platform.
+- Lastly, thank you to the students who participated in the beta testing and provided invaluable feedback to help perfect the product.

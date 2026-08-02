@@ -3,7 +3,8 @@
 ## 🌟 Introduction
 Welcome to our **Roommate & Rental Matching Platform** – A smart connection hub built for students! 
 This project aims to completely resolve the difficulties students face when looking for accommodations and compatible roommates. Unlike traditional Facebook groups or generic rental websites, our system not only provides rental listings but also integrates an advanced **Matching Algorithm** based on lifestyle, daily habits, and budget to recommend the highly compatible roommates.
-
+---
+🎓 **Academic Project:** This project was developed by Group 5 as part of the coursework for the **Computational Thinking** class. It serves as a practical application of the concepts and algorithms learned throughout the semester.
 ---
 
 ## 🚀 How It Works
@@ -15,7 +16,8 @@ The platform operates through a secure and tightly integrated connection process
 5. **Distance Geocoding:** The Multi-layer Map Matching Algorithm accurately calculates the real distance to campuses/rentals while applying Coordinate Fuzzing to obfuscate exact locations, ensuring student safety and privacy against stalkers.
 
 🎥 **Watch the Demo Video here:** [Click to watch Demo Video on Google Drive](https://drive.google.com/file/d/1zM9-svYqr5ye1I0VI8TCpdj1OPWPHmoK/view?usp=sharing)
-
+---
+🌐 **Live Demo:** [Click to watch demo web](https://project-situj.vercel.app)
 ---
 
 ## 📖 User Guide
